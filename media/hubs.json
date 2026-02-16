@@ -1,0 +1,146 @@
+[
+  {
+    "hub": "us_eastern_major",
+    "tz": "America/New_York",
+    "tier": "major",
+    "cities": ["New York", "Toronto", "Miami"]
+  },
+  {
+    "hub": "us_eastern_minor",
+    "tz": "America/New_York",
+    "tier": "minor",
+    "cities": ["Atlanta", "Boston", "Washington DC"]
+  },
+  {
+    "hub": "us_eastern_growing",
+    "tz": "America/New_York",
+    "tier": "growing",
+    "cities": ["Raleigh", "Tampa", "Orlando"]
+  },
+  {
+    "hub": "us_central_major",
+    "tz": "America/Chicago",
+    "tier": "major",
+    "cities": ["Chicago", "Dallas"]
+  },
+  {
+    "hub": "us_central_minor",
+    "tz": "America/Chicago",
+    "tier": "minor",
+    "cities": ["Houston", "Austin"]
+  },
+  {
+    "hub": "us_central_growing",
+    "tz": "America/Chicago",
+    "tier": "growing",
+    "cities": ["Kansas City", "Omaha"]
+  },
+  {
+    "hub": "us_pacific_major",
+    "tz": "America/Los_Angeles",
+    "tier": "major",
+    "cities": ["Los Angeles", "San Francisco", "Seattle"]
+  },
+  {
+    "hub": "us_pacific_minor",
+    "tz": "America/Los_Angeles",
+    "tier": "minor",
+    "cities": ["San Diego", "Portland"]
+  },
+  {
+    "hub": "us_pacific_growing",
+    "tz": "America/Los_Angeles",
+    "tier": "growing",
+    "cities": ["Sacramento", "Fresno"]
+  },
+  {
+    "hub": "latam_major",
+    "tz": "America/Sao_Paulo",
+    "tier": "major",
+    "cities": ["SÃ£o Paulo"]
+  },
+  {
+    "hub": "latam_minor",
+    "tz": "America/Mexico_City",
+    "tier": "minor",
+    "cities": ["Mexico City", "Guadalajara"]
+  },
+  {
+    "hub": "latam_growing",
+    "tz": "America/Bogota",
+    "tier": "growing",
+    "cities": ["BogotÃ¡", "MedellÃ­n"]
+  },
+  {
+    "hub": "europe_major",
+    "tz": "Europe/London",
+    "tier": "major",
+    "cities": ["London", "Paris", "Berlin"]
+  },
+  {
+    "hub": "europe_minor",
+    "tz": "Europe/Berlin",
+    "tier": "minor",
+    "cities": ["Amsterdam", "Zurich", "Vienna"]
+  },
+  {
+    "hub": "europe_growing",
+    "tz": "Europe/Istanbul",
+    "tier": "growing",
+    "cities": ["Istanbul", "Athens"]
+  },
+  {
+    "hub": "africa_minor",
+    "tz": "Africa/Lagos",
+    "tier": "minor",
+    "cities": ["Lagos"]
+  },
+  {
+    "hub": "africa_growing",
+    "tz": "Africa/Johannesburg",
+    "tier": "growing",
+    "cities": ["Johannesburg", "Cape Town"]
+  },
+  {
+    "hub": "me_major",
+    "tz": "Asia/Dubai",
+    "tier": "major",
+    "cities": ["Dubai", "Abu Dhabi"]
+  },
+  {
+    "hub": "india_minor",
+    "tz": "Asia/Kolkata",
+    "tier": "minor",
+    "cities": ["Mumbai", "Bangalore"]
+  },
+  {
+    "hub": "asia_major",
+    "tz": "Asia/Singapore",
+    "tier": "major",
+    "cities": ["Singapore", "Hong Kong"]
+  },
+  {
+    "hub": "asia_minor",
+    "tz": "Asia/Seoul",
+    "tier": "minor",
+    "cities": ["Seoul"]
+  },
+  {
+    "hub": "asia_major_japan",
+    "tz": "Asia/Tokyo",
+    "tier": "major",
+    "cities": ["Tokyo", "Osaka"]
+  },
+  {
+    "hub": "oceania_growing",
+    "tz": "Australia/Sydney",
+    "tier": "growing",
+    "cities": ["Sydney", "Melbourne"]
+  },
+  {
+    "hub": "oceania_growing_nz",
+    "tz": "Pacific/Auckland",
+    "tier": "growing",
+    "cities": ["Auckland", "Wellington"]
+  }
+]
