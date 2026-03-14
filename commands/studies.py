@@ -5,6 +5,7 @@ import random
 import logging
 from telegram import Update
 from telegram.ext import ContextTypes
+from services.content_policy import sanitize_text
 
 logger = logging.getLogger(__name__)
 
@@ -84,8 +85,8 @@ async def studies(update: Update, context: ContextTypes.DEFAULT_TYPE):
             lines = [
                 "Cannabis Research and Awareness",
                 "------------------------",
-                f"- {title}",
-                f"Summary: {desc}..." if desc else "",
+                f"- {sanitize_text(title)}",
+                f"Summary: {sanitize_text(desc)}..." if desc else "",
                 f"Link: {link}",
             ]
             logger.info("Sent study article (user: %s)", user_id)
@@ -97,7 +98,7 @@ async def studies(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lines = [
         "Cannabis Research and Whole Plant Awareness",
         "------------------------",
-        f"- {resource['title']}",
+        f"- {sanitize_text(resource['title'])}",
         f"Link: {resource['link']}",
         "",
         "Topics: Health benefits, nutrition, endocannabinoid system, land regeneration, phytochemistry",

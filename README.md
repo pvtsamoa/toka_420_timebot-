@@ -38,7 +38,7 @@ Optional env vars for external joke sources:
 - `WEEDCOINOG_X_ACCOUNT_URL` (default: `https://x.com/weedcoinOG`)
 - `WEEDCOINOG_X_COMMUNITY_URL` (default: `https://x.com/i/communities/1907131002478285013`)
 - `JOKE_REDDIT_FEEDS` (comma-separated JSON feed URLs, set `off` to disable)
-- `JOKE_BLACKLIST_TERMS` (comma-separated blocked terms, default includes `marijuana`)
+- `JOKE_BLACKLIST_TERMS` (comma-separated blocked terms)
 
 ---
 

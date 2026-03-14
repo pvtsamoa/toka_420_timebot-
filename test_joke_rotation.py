@@ -89,7 +89,7 @@ def test_blacklist_term_marijuana_is_filtered(tmp_path, monkeypatch):
     store = _make_store(tmp_path, ["This line has marijuana reference", "Clean joke line here"])
 
     inserted = store.refresh_inventory()
-    assert inserted == 1
+    assert inserted == 2
 
     joke = store.get_today_joke(now_utc=dt.datetime(2026, 3, 13, tzinfo=dt.timezone.utc))
     assert "marijuana" not in joke.lower()

@@ -102,13 +102,6 @@
     "needs_validation": true
   },
   {
-    "symbol": "MAR",
-    "name": "MarijuanaCoin",
-    "category": "culture",
-    "chain": "legacy",
-    "needs_validation": true
-  },
-  {
     "symbol": "KUSH",
     "name": "KushCoin",
     "category": "culture",

@@ -11,6 +11,7 @@ from typing import Iterable
 from urllib.parse import urlparse
 
 import requests
+from services.content_policy import get_blocked_terms, sanitize_text
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +40,7 @@ class JokeRotationStore:
 
     @staticmethod
     def _load_blacklist_terms() -> list[str]:
-        raw = os.getenv("JOKE_BLACKLIST_TERMS", "marijuana")
-        return [x.strip().lower() for x in raw.split(",") if x.strip()]
+        return get_blocked_terms()
 
     def _connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.db_path)
@@ -106,7 +106,7 @@ class JokeRotationStore:
 
         with self._connect() as conn:
             for raw in candidates:
-                body = self._normalize_text(raw)
+                body = sanitize_text(self._normalize_text(raw))
                 if not body or not self._is_candidate_safe(body):
                     continue
                 fp = self._fingerprint(body)
@@ -402,8 +402,8 @@ class JokeRotationStore:
 
         local = self._load_local_jokes()
         if local:
-            return random.choice(local)
-        return "Weedcoin OG says: keep it green, keep it chill."
+            return sanitize_text(random.choice(local))
+        return sanitize_text("Weedcoin OG says: keep it green, keep it chill.")
 
     def get_today_joke(self, now_utc: dt.datetime | None = None) -> str:
         now_utc = now_utc or dt.datetime.now(dt.timezone.utc)

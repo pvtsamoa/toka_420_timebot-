@@ -6,6 +6,7 @@ import datetime as dt
 from typing import Any, Dict, List, Optional
 import pytz
 
+from services.content_policy import sanitize_text
 from services.dexscreener import get_anchor
 from services.joke_rotation import get_rotating_joke
 
@@ -158,23 +159,23 @@ def build_ritual_text(
         # Normalize to avoid showing $WEED (not $WEEDCOIN) accidentally.
         token_obj = _pick(MEDIA.get("tokens", []), {"symbol": "WEEDCOIN", "name": "Weedcoin"})
         token_symbol = (token_obj.get("symbol") or "WEEDCOIN").strip()
-        token_name = (token_obj.get("name") or "Weedcoin").strip()
+        token_name = sanitize_text((token_obj.get("name") or "Weedcoin").strip())
 
         # Prefer explicit token_id argument if provided
         anchor_token_id = (token_id or token_symbol or DEFAULT_TOKEN).lower()
         anchor = kiss_anchor(anchor_token_id)
 
-        safety = _pick(MEDIA.get("safety", []), "DYOR | Use 2FA | Secure your keys")
+        safety = sanitize_text(_pick(MEDIA.get("safety", []), "DYOR | Use 2FA | Secure your keys"))
 
         quote_obj = _pick(MEDIA.get("quotes", []), {})
         culture_line = ""
         if isinstance(quote_obj, dict) and quote_obj:
-            q = (quote_obj.get("quote") or "").strip()
-            src = (quote_obj.get("source") or "Cannabis Culture").strip()
+            q = sanitize_text((quote_obj.get("quote") or "").strip())
+            src = sanitize_text((quote_obj.get("source") or "Cannabis Culture").strip())
             if q:
                 culture_line = f"\"{q}\" - {src}"
 
-        joke = get_rotating_joke()
+        joke = sanitize_text(get_rotating_joke())
 
         lines = [
             f"SPARK IT UP: 4:20 in {display_place}!",

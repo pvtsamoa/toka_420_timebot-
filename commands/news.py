@@ -8,6 +8,7 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 from config import get_settings
+from services.content_policy import sanitize_text
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +123,9 @@ def _reply_target(update: Update):
 
 def _build_news_message(category_emoji: str, section_title: str, article_title: str, source: str, link: str) -> str:
     """Build Telegram-safe HTML for a news item."""
+    section_title = sanitize_text(section_title)
+    article_title = sanitize_text(article_title)
+    source = sanitize_text(source)
     return (
         f"{category_emoji} <b>{escape(section_title)}</b>\n\n"
         f"<b>{escape(article_title)}</b>\n\n"
