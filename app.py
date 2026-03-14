@@ -20,6 +20,7 @@ from commands.status import status
 from commands.news import news
 from commands.token import token, health_check
 from commands.studies import studies
+from commands.blessnow import blessnow
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -27,6 +28,7 @@ LOG_DIR = os.path.join(BASE_DIR, "logs")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
 logger = logging.getLogger("toka.app")
+DISPATCH_LOGGER_NAME = "toka.dispatch"
 
 
 _BOT_TOKEN_RE = re.compile(r"(https://api\.telegram\.org/bot)([^/\s]+)")
@@ -62,6 +64,22 @@ def configure_logging() -> None:
         encoding="utf-8",
     )
 
+    # Separate failure stream for Telegram/X dispatch issues.
+    dispatch_logger = logging.getLogger(DISPATCH_LOGGER_NAME)
+    dispatch_logger.setLevel(logging.WARNING)
+    dispatch_logger.propagate = False
+
+    if not dispatch_logger.handlers:
+        dispatch_handler = logging.FileHandler(
+            os.path.join(LOG_DIR, "dispatch_errors.log"),
+            encoding="utf-8",
+        )
+        dispatch_handler.setLevel(logging.WARNING)
+        dispatch_handler.setFormatter(
+            logging.Formatter("%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s")
+        )
+        dispatch_logger.addHandler(dispatch_handler)
+
     # Third-party HTTP libraries can log full Telegram URLs including bot token.
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
@@ -69,6 +87,9 @@ def configure_logging() -> None:
     token_filter = RedactTelegramTokenFilter()
     root_logger = logging.getLogger()
     for handler in root_logger.handlers:
+        handler.addFilter(token_filter)
+
+    for handler in dispatch_logger.handlers:
         handler.addFilter(token_filter)
 
 
@@ -110,6 +131,7 @@ async def set_bot_info(app: Application) -> None:
                 BotCommand("news", "Cryptocurrency & market news rotation"),
                 BotCommand("health", "Quick health status"),
                 BotCommand("studies", "Cannabis research & awareness"),
+                BotCommand("blessnow", "Push current Green Hours blessing now"),
             ]
         )
         logger.info("Bot info updated successfully")
@@ -142,6 +164,7 @@ def build_app() -> Application:
     app.add_handler(CommandHandler("token", token))
     app.add_handler(CommandHandler("health", health_check))
     app.add_handler(CommandHandler("studies", studies))
+    app.add_handler(CommandHandler("blessnow", blessnow))
 
     # Clean shutdown for APScheduler
     async def _shutdown_scheduler(app: Application) -> None:

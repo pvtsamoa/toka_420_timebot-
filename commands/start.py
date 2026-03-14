@@ -24,6 +24,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/token [symbol] — Token price lookup (default: weedcoin)\n"
         "/studies — Cannabis research and awareness resources\n"
         "/health — Quick bot health check\n\n"
+        "/blessnow — Push current Green Hours blessing now\n\n"
         "<b>AUTOMATED RITUALS</b>\n\n"
         "Fires daily at 04:20 local time in every active timezone.\n"
         "One ritual per timezone, rolling across the globe 24/7.\n\n"

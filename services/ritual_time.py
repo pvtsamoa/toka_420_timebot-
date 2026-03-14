@@ -1,11 +1,14 @@
 import os
 import logging
 import datetime as dt
+import asyncio
 import pytz
 
 from services.ritual import build_ritual_text
+from services.x_poster import post_mirror
 
 logger = logging.getLogger(__name__)
+dispatch_logger = logging.getLogger("toka.dispatch")
 
 
 _EPOCH = dt.date(2024, 1, 1)
@@ -86,7 +89,25 @@ async def ritual_call(context):
             city=display,
         )
 
-        await context.bot.send_message(chat_id=chat_id, text=text)
+        try:
+            await context.bot.send_message(chat_id=chat_id, text=text)
+        except Exception as e:
+            dispatch_logger.error(
+                "dispatch_failure side=telegram tz=%s hub=%s chat_id=%s error=%s",
+                tz_name,
+                hub_id,
+                chat_id,
+                e,
+            )
+            raise
+
+        mirror_ok = await asyncio.to_thread(post_mirror, text)
+        if not mirror_ok:
+            dispatch_logger.warning(
+                "dispatch_failure side=x tz=%s hub=%s reason=mirror_not_sent",
+                tz_name,
+                hub_id,
+            )
 
         logger.info("Ritual sent tz=%s hub=%s display=%s", tz_name, hub_id, display)
 
