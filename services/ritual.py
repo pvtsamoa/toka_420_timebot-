@@ -2,9 +2,12 @@ import os
 import random
 import json
 import logging
+import datetime as dt
 from typing import Any, Dict, List, Optional
+import pytz
 
 from services.dexscreener import get_anchor
+from services.joke_rotation import get_rotating_joke
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +112,18 @@ def _normalize_hub_fields(hub: Any, hub_name: Optional[str], city: Optional[str]
     return hub_name, city, tier, None
 
 
+def _time_phase_for_tz(tz_name: Optional[str]) -> str:
+    """Return whether this blessing is for day or night."""
+    try:
+        if not tz_name:
+            return "day"
+        tz = pytz.timezone(tz_name)
+        hour = dt.datetime.now(tz).hour
+        return "day" if 4 <= hour < 16 else "night"
+    except Exception:
+        return "day"
+
+
 def build_ritual_text(
     hub: Any = None,
     token_id: Optional[str] = None,
@@ -129,14 +144,15 @@ def build_ritual_text(
     try:
         from services.navigator_blessing import get_blessing
 
-        resolved_hub_name, resolved_city, resolved_tier, _tz = _normalize_hub_fields(
+        resolved_hub_name, resolved_city, _resolved_tier, resolved_tz = _normalize_hub_fields(
             hub, hub_name, city, tier
         )
 
         display_place = resolved_city or resolved_hub_name or "your timezone"
-        display_tier = f" ({resolved_tier})" if resolved_tier else ""
+        phase = _time_phase_for_tz(resolved_tz)
 
         blessing = get_blessing()
+        day_night_line = f"Bless your {phase}: {blessing}"
 
         # Token objects in cannabis_tokens.json may vary.
         # Normalize to avoid showing $WEED (not $WEEDCOIN) accidentally.
@@ -151,34 +167,38 @@ def build_ritual_text(
         safety = _pick(MEDIA.get("safety", []), "DYOR | Use 2FA | Secure your keys")
 
         quote_obj = _pick(MEDIA.get("quotes", []), {})
-        quote_text = ""
+        culture_line = ""
         if isinstance(quote_obj, dict) and quote_obj:
             q = (quote_obj.get("quote") or "").strip()
             src = (quote_obj.get("source") or "Cannabis Culture").strip()
             if q:
-                quote_text = f"\"{q}\" - {src}"
+                culture_line = f"\"{q}\" - {src}"
+
+        joke = get_rotating_joke()
 
         lines = [
-            f"ðŸŒ¿â›µï¸ SPARK IT UP: 4:20 in {display_place}{display_tier}!",
+            f"SPARK IT UP: 4:20 in {display_place}!",
             "",
-            "âœ¨ Navigator's Blessing",
-            blessing,
+            "Navigator's Blessing",
+            day_night_line,
             "",
-            f"ðŸ’° Featured Token: {token_name}",
+            f"Featured Token: {token_name}",
             anchor,
             "",
-            "ðŸ›¡ï¸ Cryptocurrency Safety",
+            "Scam Watch",
             safety,
         ]
 
-        if quote_text:
-            lines += ["", "ðŸŽ¬ Cannabis Culture", quote_text]
+        if culture_line:
+            lines += ["", "Cannabis Culture", culture_line]
 
-        lines += ["", "Spark responsibly. Hold wise. ðŸŒ²"]
+        lines += ["", "Weedcoin OG Meme/Joke", joke]
+
+        lines += ["", "Spark responsibly. Hold wise."]
 
         return "\n".join(lines)
 
     except Exception as e:
         logger.exception("Error building ritual text for hub=%s: %s", hub_name or hub, e)
         place = city or hub_name or "your timezone"
-        return f"ðŸŒ¿â›µï¸ SPARK IT UP: 4:20 in {place}!\nâš ï¸ Error generating ritual. Please retry."
+        return f"SPARK IT UP: 4:20 in {place}!\nError generating ritual. Please retry."

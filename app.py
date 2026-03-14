@@ -1,13 +1,17 @@
 import os
 import sys
 import logging
+import re
+import time
 from dotenv import load_dotenv
 from telegram import BotCommand
+from telegram.error import NetworkError, TimedOut
 from telegram.ext import Application, CommandHandler
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from services.config_validator import validate_config
 from services.error_handler import on_error
+from services.joke_rotation import get_store
 from scheduler import schedule_hourly_420
 from services.ritual_time import ritual_call
 
@@ -15,6 +19,7 @@ from commands.start import start
 from commands.status import status
 from commands.news import news
 from commands.token import token, health_check
+from commands.studies import studies
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,6 +27,25 @@ LOG_DIR = os.path.join(BASE_DIR, "logs")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
 logger = logging.getLogger("toka.app")
+
+
+_BOT_TOKEN_RE = re.compile(r"(https://api\.telegram\.org/bot)([^/\s]+)")
+
+
+class RedactTelegramTokenFilter(logging.Filter):
+    """Redact Telegram bot token fragments from log records."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        try:
+            rendered = record.getMessage()
+            redacted = _BOT_TOKEN_RE.sub(r"\1<redacted>", rendered)
+            if redacted != rendered:
+                record.msg = redacted
+                record.args = ()
+        except Exception:
+            # Never break application logging due to redaction logic.
+            return True
+        return True
 
 
 def configure_logging() -> None:
@@ -38,9 +62,21 @@ def configure_logging() -> None:
         encoding="utf-8",
     )
 
+    # Third-party HTTP libraries can log full Telegram URLs including bot token.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+
+    token_filter = RedactTelegramTokenFilter()
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers:
+        handler.addFilter(token_filter)
+
 
 def validate_env_permissions() -> None:
-    """Check .env file has secure permissions (600)."""
+    """Check .env file has secure permissions (600). Unix only — no-op on Windows."""
+    if os.name == "nt":
+        return
+
     import stat
     env_path = os.path.join(BASE_DIR, ".env")
 
@@ -53,7 +89,7 @@ def validate_env_permissions() -> None:
         # Check if group or others have any permissions
         if st.st_mode & (stat.S_IRWXG | stat.S_IRWXO):
             logger.warning(
-                "⚠️ .env has insecure permissions! "
+                ".env has insecure permissions! "
                 "Run: chmod 600 .env (current: %o)",
                 stat.S_IMODE(st.st_mode)
             )
@@ -73,6 +109,7 @@ async def set_bot_info(app: Application) -> None:
                 BotCommand("token", "Token price (default: weedcoin)"),
                 BotCommand("news", "Cryptocurrency & market news rotation"),
                 BotCommand("health", "Quick health status"),
+                BotCommand("studies", "Cannabis research & awareness"),
             ]
         )
         logger.info("Bot info updated successfully")
@@ -104,6 +141,7 @@ def build_app() -> Application:
     app.add_handler(CommandHandler("news", news))
     app.add_handler(CommandHandler("token", token))
     app.add_handler(CommandHandler("health", health_check))
+    app.add_handler(CommandHandler("studies", studies))
 
     # Clean shutdown for APScheduler
     async def _shutdown_scheduler(app: Application) -> None:
@@ -117,6 +155,15 @@ def build_app() -> Application:
     # Start scheduler + set bot info AFTER event loop is running
     async def _post_init(app: Application) -> None:
         await set_bot_info(app)
+
+        # Warm up persistent joke inventory and day rotation window.
+        try:
+            store = get_store()
+            store.refresh_inventory()
+            store.build_rotation()
+            logger.info("Joke rotation inventory ready")
+        except Exception as e:
+            logger.warning("Could not warm joke rotation store: %s", e)
 
         sched = AsyncIOScheduler(timezone=os.getenv("TZ", "America/Los_Angeles"))
         sched.start()
@@ -146,10 +193,35 @@ def main() -> int:
 
     validate_config()
 
-    app = build_app()
+    # Retry bootstrap for transient Telegram API/network timeouts.
+    max_retries = int(os.getenv("POLLING_BOOTSTRAP_MAX_RETRIES", "5"))
+    base_delay = float(os.getenv("POLLING_BOOTSTRAP_BASE_DELAY_SECONDS", "2"))
 
-    logger.info("Starting polling...")
-    app.run_polling(drop_pending_updates=True)
+    for attempt in range(max_retries + 1):
+        app = build_app()
+        logger.info("Starting polling...")
+        try:
+            app.run_polling(drop_pending_updates=True)
+            return 0
+        except (TimedOut, NetworkError) as e:
+            if attempt >= max_retries:
+                logger.exception(
+                    "Polling bootstrap failed after %d retries: %s",
+                    max_retries,
+                    e,
+                )
+                raise
+
+            delay = min(base_delay * (2 ** attempt), 60.0)
+            logger.warning(
+                "Polling bootstrap failed (%s). Retrying in %.1fs (%d/%d)",
+                e.__class__.__name__,
+                delay,
+                attempt + 1,
+                max_retries,
+            )
+            time.sleep(delay)
+
     return 0
 
 

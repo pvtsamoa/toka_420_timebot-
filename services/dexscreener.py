@@ -1,5 +1,5 @@
-import os
 import time
+import threading
 import requests
 import logging
 
@@ -9,6 +9,8 @@ DEX_URL_TOKEN = "https://api.dexscreener.com/latest/dex/tokens/{id}"
 DEX_URL_SEARCH = "https://api.dexscreener.com/latest/dex/search?q={q}"
 TIMEOUT = 10
 _cache = {"key": None, "data": None, "ts": 0, "ttl": 60}
+_cache_lock = threading.Lock()
+
 
 def _http_json(url: str):
     """Fetch and parse JSON from URL."""
@@ -17,14 +19,15 @@ def _http_json(url: str):
         r.raise_for_status()
         return r.json()
     except requests.Timeout:
-        logger.warning(f"Request timeout: {url}")
+        logger.warning("Request timeout: %s", url)
         raise
     except requests.RequestException as e:
-        logger.warning(f"Request failed for {url}: {e}")
+        logger.warning("Request failed for %s: %s", url, e)
         raise
     except ValueError as e:
-        logger.warning(f"Invalid JSON from {url}: {e}")
+        logger.warning("Invalid JSON from %s: %s", url, e)
         raise
+
 
 def _pick_pair(payload):
     """Select the pair with highest 24h volume."""
@@ -36,11 +39,12 @@ def _pick_pair(payload):
         return sorted(
             pairs,
             key=lambda p: float(p.get("volume", {}).get("h24") or 0),
-            reverse=True
+            reverse=True,
         )[0]
     except Exception as e:
-        logger.warning(f"Error selecting pair: {e}")
+        logger.warning("Error selecting pair: %s", e)
         return None
+
 
 def _format_anchor(pair):
     """Format pair data into user-friendly anchor message."""
@@ -48,27 +52,27 @@ def _format_anchor(pair):
         price = pair.get("priceUsd") or pair.get("priceNative") or "?"
         change = pair.get("priceChange", {}).get("h24")
         vol24 = pair.get("volume", {}).get("h24")
-        
+
         # Format price
         try:
             price = f"${float(price):,.6f}".rstrip("0").rstrip(".")
         except (ValueError, TypeError):
             price = "N/A"
-        
+
         # Format change
         try:
-            change_txt = f"{float(change):+.2f}%" if change else "Â±0.00%"
+            change_txt = f"{float(change):+.2f}%" if change else "+/-0.00%"
         except (ValueError, TypeError):
-            change_txt = "Â±0.00%"
-        
+            change_txt = "+/-0.00%"
+
         # Format volume
         try:
             vol24_txt = f"${float(vol24):,.0f}" if vol24 else "$0"
         except (ValueError, TypeError):
             vol24_txt = "$0"
-        
+
         symbol = pair.get("baseToken", {}).get("symbol") or "TOKEN"
-        
+
         return {
             "symbol": symbol,
             "price": price,
@@ -76,52 +80,54 @@ def _format_anchor(pair):
             "vol24": vol24_txt,
             "chain": pair.get("chainId") or pair.get("chain") or "",
             "dex": pair.get("dexId") or "",
-            "pair": pair.get("pairAddress") or ""
+            "pair": pair.get("pairAddress") or "",
         }
     except Exception as e:
-        logger.exception(f"Error formatting anchor: {e}")
+        logger.exception("Error formatting anchor: %s", e)
         return None
 
+
 def get_anchor(token_id: str):
-    """Get formatted anchor data for a token, with caching."""
+    """Get formatted anchor data for a token, with thread-safe caching."""
     now = time.time()
-    
-    # Check cache
-    if _cache["key"] == token_id and now - _cache["ts"] < _cache["ttl"]:
-        logger.debug(f"Cache hit for {token_id}")
-        return _cache["data"]
-    
+
+    with _cache_lock:
+        if _cache["key"] == token_id and now - _cache["ts"] < _cache["ttl"]:
+            logger.debug("Cache hit for %s", token_id)
+            return _cache["data"]
+
     try:
-        logger.debug(f"Fetching data for {token_id}...")
-        
+        logger.debug("Fetching data for %s...", token_id)
+
         # Try token endpoint first
         j = _http_json(DEX_URL_TOKEN.format(id=token_id))
         pair = _pick_pair(j)
-        
+
         # Fallback to search endpoint
         if not pair:
-            logger.debug(f"No pair found by ID, searching: {token_id}")
+            logger.debug("No pair found by ID, searching: %s", token_id)
             j = _http_json(DEX_URL_SEARCH.format(q=token_id))
             pair = _pick_pair(j)
-        
+
         if not pair:
-            logger.warning(f"No trading pair found for {token_id}")
+            logger.warning("No trading pair found for %s", token_id)
             return None
-        
+
         # Format and cache
         data = _format_anchor(pair)
         if data:
-            _cache.update({"key": token_id, "data": data, "ts": now})
-            logger.debug(f"âœ… Got anchor for {token_id}: {data['symbol']} {data['price']}")
-        
+            with _cache_lock:
+                _cache.update({"key": token_id, "data": data, "ts": time.time()})
+            logger.debug("Got anchor for %s: %s %s", token_id, data["symbol"], data["price"])
+
         return data
-        
+
     except requests.Timeout:
-        logger.warning(f"DexScreener timeout for {token_id}")
+        logger.warning("DexScreener timeout for %s", token_id)
         return None
     except requests.RequestException as e:
-        logger.warning(f"DexScreener error for {token_id}: {e}")
+        logger.warning("DexScreener error for %s: %s", token_id, e)
         return None
     except Exception as e:
-        logger.exception(f"Unexpected error getting anchor for {token_id}: {e}")
+        logger.exception("Unexpected error getting anchor for %s: %s", token_id, e)
         return None

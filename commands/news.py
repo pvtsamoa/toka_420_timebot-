@@ -2,15 +2,19 @@ import xml.etree.ElementTree as ET
 import requests
 import logging
 import time
+import asyncio
+from html import escape, unescape
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
-from config import SETTINGS
+from config import get_settings
 
 logger = logging.getLogger(__name__)
 
-# Rate limiting
+# Rate limiting — entries older than this are pruned on each check
 _rate_limit_cache = {}
 RATE_LIMIT_SECONDS = 3
+_RATE_LIMIT_TTL = 60  # prune entries after 60s to prevent unbounded growth
 
 # News category sources
 CRYPTO_NEWS = [
@@ -50,10 +54,15 @@ REGIONAL_FEEDS = {
 _user_calls = {}
 
 
-def _fetch_one(url: str):
+async def _fetch_one(url: str):
     """Fetch the first valid item from an RSS feed."""
     try:
-        r = requests.get(url, timeout=10, headers={"User-Agent": "Toka420Bot/1.0"})
+        r = await asyncio.to_thread(
+            requests.get,
+            url,
+            timeout=10,
+            headers={"User-Agent": "Toka420Bot/1.0"},
+        )
         r.raise_for_status()
 
         root = ET.fromstring(r.content)
@@ -65,13 +74,13 @@ def _fetch_one(url: str):
             logger.debug("No RSS channel found for feed: %s", url)
             return None
 
-        chan_title = (channel.findtext("title") or "").strip()
+        chan_title = unescape((channel.findtext("title") or "").strip())
         item = channel.find("item")
         if item is None:
             logger.debug("No items in feed: %s", url)
             return None
 
-        title = (item.findtext("title") or "").strip()
+        title = unescape((item.findtext("title") or "").strip())
         link = (item.findtext("link") or "").strip()
 
         # Some feeds use <link href="..."> or have whitespace/newlines
@@ -101,7 +110,7 @@ def _fetch_one(url: str):
 
 
 def _get_category_cycle(user_id: int) -> str:
-    """Rotate through 2 categories per user call (crypto â†’ market)."""
+    """Rotate through 2 categories per user call (crypto to market)."""
     call_count = _user_calls.get(user_id, 0)
     _user_calls[user_id] = call_count + 1
     return ["crypto", "market"][call_count % 2]
@@ -111,21 +120,37 @@ def _reply_target(update: Update):
     return update.effective_message
 
 
+def _build_news_message(category_emoji: str, section_title: str, article_title: str, source: str, link: str) -> str:
+    """Build Telegram-safe HTML for a news item."""
+    return (
+        f"{category_emoji} <b>{escape(section_title)}</b>\n\n"
+        f"<b>{escape(article_title)}</b>\n\n"
+        f"Source: {escape(source)}\n"
+        f"<a href=\"{escape(link, quote=True)}\">Read more</a>\n\n"
+        "Call /news again for the next category\n"
+        "Categories rotate: Crypto to Markets"
+    )
+
+
 async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Send rotating news: Crypto â†’ Markets, with optional regional fallback."""
+    """Send rotating news: Crypto to Markets, with optional regional fallback."""
     user_id = update.effective_user.id if update.effective_user else "unknown"
     logger.info("News command requested (user: %s)", user_id)
 
     msg = _reply_target(update)
 
-    # Rate limiting
+    # Rate limiting — prune stale entries to prevent memory leak
     now = time.time()
+    stale = [uid for uid, ts in _rate_limit_cache.items() if now - ts > _RATE_LIMIT_TTL]
+    for uid in stale:
+        del _rate_limit_cache[uid]
+
     if user_id in _rate_limit_cache:
         elapsed = now - _rate_limit_cache[user_id]
         if elapsed < RATE_LIMIT_SECONDS:
             if msg:
                 await msg.reply_text(
-                    f"⏱️ Please wait {RATE_LIMIT_SECONDS - int(elapsed)} seconds before requesting again."
+                    f"Please wait {RATE_LIMIT_SECONDS - int(elapsed)} seconds before requesting again."
                 )
             logger.info("Rate limited user %s (elapsed: %.1fs)", user_id, elapsed)
             return
@@ -136,57 +161,44 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if category == "crypto":
             feeds = CRYPTO_NEWS
-            emoji = "ðŸ’°"
+            icon = "💰"
             title = "Cryptocurrency News"
         else:
             feeds = MARKET_NEWS
-            emoji = "ðŸ“ˆ"
+            icon = "📈"
             title = "Market and Finance News"
 
         result = None
         for url in feeds:
-            result = _fetch_one(url)
+            result = await _fetch_one(url)
             if result:
                 break
 
         if not result:
-            scope = (getattr(SETTINGS, "TELEGRAM_SCOPE", None) or "all").lower()
+            scope = (get_settings().TELEGRAM_SCOPE or "all").lower()
             fallback_feeds = REGIONAL_FEEDS.get(scope, [])
             for url in fallback_feeds:
-                result = _fetch_one(url)
+                result = await _fetch_one(url)
                 if result:
                     break
 
         if not result:
             if msg:
                 await msg.reply_text(
-                    f"âš ï¸ Could not fetch {title.lower()} right now.\n\nTry again in a few moments.",
-                    parse_mode="Markdown",
+                    f"Could not fetch {title.lower()} right now. Try again in a few moments."
                 )
             logger.warning("Could not fetch any news for category %s", category)
             return
 
         chan_title, article_title, link = result
-
-        message = f"""
-{emoji} **{title}**
-
-**{article_title}**
-
-ðŸ“° Source: {chan_title}
-ðŸ”— [Read more]({link})
-
---------------------
-*Call `/news` again for the next category*
-*Categories rotate: Crypto â†’ Markets*
-"""
+        message = _build_news_message(icon, title, article_title, chan_title, link)
 
         if msg:
-            await msg.reply_text(message, parse_mode="Markdown")
+            await msg.reply_text(message, parse_mode=ParseMode.HTML, disable_web_page_preview=False)
 
         logger.info("Sent %s news to user %s: %s", category, user_id, article_title[:80])
 
     except Exception as e:
         logger.exception("Error in news command: %s", e)
         if msg:
-            await msg.reply_text("âš ï¸ Error fetching news. Try again later.", parse_mode="Markdown")
+            await msg.reply_text("Error fetching news. Try again later.")

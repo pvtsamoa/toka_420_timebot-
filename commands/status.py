@@ -1,6 +1,8 @@
 import os
 import logging
 import datetime as dt
+from html import escape
+from telegram.constants import ParseMode
 from services.ritual import kiss_anchor
 from services.navigator_blessing import get_blessing
 
@@ -129,8 +131,11 @@ def _next_ritual(context):
 
 async def status(update, context):
     """Show bot health, scheduler status, price updates, and next ritual."""
-    user_id = update.effective_user.id
+    user_id = update.effective_user.id if update.effective_user else "unknown"
     logger.info("Status command requested (user: %s)", user_id)
+    msg = update.effective_message
+    if not msg:
+        return
 
     try:
         token = os.getenv("DEFAULT_TOKEN", "weedcoin").lower()
@@ -145,37 +150,31 @@ async def status(update, context):
 
         blessing = get_blessing()
 
-        message = f"""
-ðŸŒ¿â›µï¸ **Navigator Log â€” Toka v1**
-{'-' * 40}
+        message = (
+            "<b>Navigator Log - Toka v1</b>\n"
+            "----------------------------------------\n\n"
+            "<b>BOT HEALTH</b>\n"
+            "Status: Online\n\n"
+            "<b>SCHEDULER</b>\n"
+            f"Engine: {escape(sched_name)}\n"
+            f"Jobs scheduled: {hub_jobs} hub jobs (total {total_jobs})\n\n"
+            "<b>PRICE ANCHOR</b>\n"
+            f"Token: {escape(token.upper())}\n"
+            f"{escape(anchor)}\n\n"
+            "<b>NEXT RITUAL</b>\n"
+            f"Engine: {escape(next_sched_name)}\n"
+            f"Time: {escape(nxt_txt + hub_txt)}\n"
+            "Frequency: Daily (04:20 local per timezone, rolling global)\n\n"
+            "----------------------------------------\n"
+            "<b>Navigator's Blessing</b>\n"
+            f"{escape(blessing)}\n\n"
+            "Use /token [symbol] for detailed charts\n"
+            "Use /news for market updates"
+        )
 
-ðŸŸ¢ **BOT HEALTH**
-Status: Online âœ…
-
-ðŸ•° **SCHEDULER**
-Engine: {sched_name}
-Jobs scheduled: {hub_jobs} hub jobs (total {total_jobs})
-
-ðŸ“Š **PRICE ANCHOR**
-Token: {token.upper()}
-{anchor}
-
-ðŸ“… **NEXT RITUAL**
-Engine: {next_sched_name}
-Time: {nxt_txt}{hub_txt}
-Frequency: Daily (04:20 local per timezone, rolling global)
-
-----------------------------------------
-**âœ¨ Navigator's Blessing âœ¨**
-{blessing}
-
-*Use `/token [symbol]` for detailed charts*
-*Use `/news` for market updates*
-"""
-
-        await update.message.reply_text(message, parse_mode="Markdown")
+        await msg.reply_text(message, parse_mode=ParseMode.HTML)
         logger.info("Status sent to user %s", user_id)
 
     except Exception as e:
         logger.exception("Error in status command: %s", e)
-        await update.message.reply_text("âš ï¸ Error generating status. Try again later.", parse_mode="Markdown")
+        await msg.reply_text("Error generating status. Try again later.")

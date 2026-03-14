@@ -32,9 +32,9 @@ async def ritual_call(context):
       - hubs: list[hub_dict] where each hub_dict includes:
           - hub: str
           - tier: str
-          - cities: list[str]
           - tz: str
-    Scheduler chooses the TIMEZONE; this function rotates which HUB and CITY gets the blessing.
+          - display: str (optional — friendly name shown in message, falls back to tz)
+    Blesses the timezone, not individual cities. Hub rotates daily within the timezone.
     """
     try:
         payload = getattr(context, "job", None).data if getattr(context, "job", None) else None
@@ -68,32 +68,27 @@ async def ritual_call(context):
             logger.error("Chosen hub invalid. tz=%s chosen=%s", tz_name, chosen_hub)
             return
 
-        cities = chosen_hub.get("cities") or []
-        chosen_city = _pick_rotating(cities, day_idx)
-
         hub_id = chosen_hub.get("hub", "hub")
-        tier = chosen_hub.get("tier", "")
+        # Use optional friendly display name, fall back to raw tz string
+        display = chosen_hub.get("display") or tz_name
 
         logger.info(
-            "Ritual start tz=%s hub=%s tier=%s city=%s token=%s",
+            "Ritual start tz=%s hub=%s token=%s",
             tz_name,
             hub_id,
-            tier,
-            chosen_city,
             token_id,
         )
 
-        # Build message using new hub model
+        # Bless the timezone — display name shown in the message
         text = build_ritual_text(
             chosen_hub,
             token_id=token_id,
-            city=chosen_city,
-            tier=tier,
+            city=display,
         )
 
         await context.bot.send_message(chat_id=chat_id, text=text)
 
-        logger.info("Ritual sent tz=%s hub=%s city=%s", tz_name, hub_id, chosen_city)
+        logger.info("Ritual sent tz=%s hub=%s display=%s", tz_name, hub_id, display)
 
     except Exception as e:
         logger.exception("Ritual failed: %s", e)

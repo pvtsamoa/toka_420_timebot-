@@ -3,8 +3,6 @@ import json
 import pytz
 import datetime as dt
 import logging
-import asyncio
-import inspect
 from types import SimpleNamespace
 
 logger = logging.getLogger(__name__)
@@ -62,7 +60,6 @@ def find_420_hubs_now(hubs: list) -> list:
 
             # Check if it's 4:20 AM or 4:20 PM (hour 4 or 16, minute 20)
             if local_now.hour in (4, 16) and local_now.minute == 20:
-                hub["_local_hour"] = local_now.hour
                 matching.append(hub)
         except Exception as e:
             logger.warning("Error checking timezone %s: %s", tz_name, e)
@@ -81,10 +78,12 @@ def _build_ptb_context(app, data: dict):
 
 def schedule_hourly_420(scheduler, callback, app=None):
     """
-    Schedule ONE job that fires every hour at :20.
-    
-    When it fires, it checks which timezones are currently
-    at 4:20 (AM or PM) and sends rituals for those zones.
+    Schedule ONE job that fires every minute.
+
+    Fires every minute so half-hour/quarter-hour offset timezones
+    (India +5:30, Nepal +5:45, Iran +3:30, etc.) are never missed.
+    When it fires, it checks which timezones are currently at 4:20
+    (AM or PM) and sends rituals for those zones.
     """
     hubs = load_hubs()
 
@@ -92,7 +91,7 @@ def schedule_hourly_420(scheduler, callback, app=None):
     if app:
         app.bot_data["all_hubs"] = hubs
 
-    from apscheduler.triggers.cron import CronTrigger
+    from apscheduler.triggers.interval import IntervalTrigger
 
     async def _run():
         """Find who's at 4:20 right now and fire their ritual."""
@@ -118,33 +117,22 @@ def schedule_hourly_420(scheduler, callback, app=None):
             ctx = _build_ptb_context(app, payload)
 
             try:
-                if inspect.iscoroutinefunction(callback):
-                    await callback(ctx)
-                else:
-                    callback(ctx)
+                await callback(ctx)
                 logger.info("Ritual fired for %s (%d hubs)", tz_name, len(hubs_in_tz))
             except Exception as e:
                 logger.exception("Ritual failed for %s: %s", tz_name, e)
 
-    def _fire():
-        """Bridge from APScheduler sync call to async."""
-        try:
-            loop = asyncio.get_running_loop()
-            loop.create_task(_run())
-        except RuntimeError:
-            asyncio.run(_run())
-
-    # Fire every hour at minute :20
+    # Pass coroutine directly — AsyncIOScheduler handles it natively
     job = scheduler.add_job(
-        _fire,
-        CronTrigger(minute=20),  # every hour at :20
+        _run,
+        IntervalTrigger(minutes=1),
         id="global_420_check",
         name="global_420_check",
         replace_existing=True,
     )
 
     logger.info(
-        "Global 4:20 checker scheduled (every hour at :20) | %d hubs loaded | next=%s",
+        "Global 4:20 checker scheduled (every minute) | %d hubs loaded | next=%s",
         len(hubs),
         getattr(job, "next_run_time", None),
     )
