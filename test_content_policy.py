@@ -23,8 +23,8 @@ def test_media_json_does_not_ship_blocked_term():
     assert not offenders, f"Blocked terminology remains in media files: {offenders}"
 
 
-def test_quotes_file_still_parses_after_policy_cleanup():
-    quotes_path = Path(__file__).resolve().parent / "media" / "cannabis_quotes.json"
-    payload = json.loads(quotes_path.read_text(encoding="utf-8"))
+def test_jokes_file_still_parses():
+    jokes_path = Path(__file__).resolve().parent / "media" / "jokes.json"
+    payload = json.loads(jokes_path.read_text(encoding="utf-8"))
     assert isinstance(payload, list)
-    assert all("quote" in item and "source" in item for item in payload)
+    assert all(isinstance(item, str) for item in payload)

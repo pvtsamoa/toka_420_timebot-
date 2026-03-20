@@ -1,10 +1,6 @@
 import os
-import random
-import json
 import logging
-import datetime as dt
-from typing import Any, Dict, List, Optional
-import pytz
+from typing import Any, Optional
 
 from services.content_policy import sanitize_text
 from services.dexscreener import get_anchor
@@ -12,194 +8,121 @@ from services.joke_rotation import get_rotating_joke
 
 logger = logging.getLogger(__name__)
 
-# Use the official token name consistently
-DEFAULT_TOKEN = os.getenv("DEFAULT_TOKEN", "weedcoin")
 
-
-def _pick(lst, default=None):
-    """Safely pick a random item from a list."""
-    if default is None:
-        default = ""
-    try:
-        return random.choice(lst) if lst else default
-    except Exception as e:
-        logger.warning("Error picking from list: %s", e)
-        return default
-
-
-def _load_json(path: str):
-    """Safely load JSON file."""
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            logger.debug("Loaded JSON from %s", path)
-            return data
-    except FileNotFoundError:
-        logger.warning("JSON file not found: %s", path)
-        return []
-    except json.JSONDecodeError as e:
-        logger.error("Invalid JSON in %s: %s", path, e)
-        return []
-    except Exception as e:
-        logger.exception("Error loading JSON from %s: %s", path, e)
-        return []
-
-
-def _project_root() -> str:
+def _weedcoin_line() -> str:
     """
-    Resolve repo root robustly.
+    Fetch Weedcoin OG price from DexScreener, preferring the Solana pair.
 
-    This file is in services/, so repo root is one level up from this file's directory.
+    WEEDCOIN_TOKEN env  — contract address or search term (default: weedcoin)
+    WEEDCOIN_CHAIN env  — chain to prefer (default: solana)
+
+    The display label is always $WEEDCOIN regardless of what DexScreener
+    returns as the symbol, because the brand is $WEEDCOIN not $WEED.
     """
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-
-def load_media_bank() -> Dict[str, List[Any]]:
-    """Load all media files (quotes, safety tips, tokens)."""
-    base = os.path.join(_project_root(), "media")
+    token_id = os.getenv("WEEDCOIN_TOKEN", "weedcoin").strip()
+    chain    = os.getenv("WEEDCOIN_CHAIN", "solana").strip()
     try:
-        media = {
-            "quotes": _load_json(os.path.join(base, "cannabis_quotes.json")) or [],
-            "safety": _load_json(os.path.join(base, "safety.json")) or [],
-            "tokens": _load_json(os.path.join(base, "cannabis_tokens.json")) or [],
-        }
-        logger.debug(
-            "Loaded media bank: %d quotes, %d safety tips, %d tokens",
-            len(media["quotes"]),
-            len(media["safety"]),
-            len(media["tokens"]),
-        )
-        return media
+        data = get_anchor(token_id, prefer_chain=chain)
+        if not data:
+            return "$WEEDCOIN: price n/a"
+        change24 = data.get("change24", "+/-0.00%")
+        price    = data.get("price", "n/a")
+        vol24    = data.get("vol24", "$0")
+        return f"$WEEDCOIN: {change24} | {price} | 24h vol {vol24}"
     except Exception as e:
-        logger.exception("Failed to load media bank: %s", e)
-        return {"quotes": [], "safety": [], "tokens": []}
+        logger.exception("Error fetching Weedcoin price: %s", e)
+        return "$WEEDCOIN: price n/a"
 
 
-MEDIA = load_media_bank()
+def _secondary_line() -> tuple[str, str]:
+    """
+    Fetch secondary token price from DexScreener.
 
+    SECONDARY_TOKEN env — any token (default: ethereum)
 
-def kiss_anchor(token_id: Optional[str]):
-    """Get formatted price anchor for a token."""
-    token_id = (token_id or DEFAULT_TOKEN).strip()
+    Returns (label, price_line) so the caller can build the section header
+    using the real symbol from DexScreener (e.g. BTC, SOL, BONK).
+    """
+    token_id = os.getenv("SECONDARY_TOKEN", "ethereum").strip()
     try:
         data = get_anchor(token_id)
         if not data:
-            logger.debug("No price data for %s", token_id)
-            return f"{token_id}: price n/a | vol n/a | 24h +/-0.00%"
+            return token_id.upper(), f"{token_id.upper()}: price n/a"
+        symbol   = data.get("symbol") or token_id.upper()
+        change24 = data.get("change24", "+/-0.00%")
+        price    = data.get("price", "n/a")
+        vol24    = data.get("vol24", "$0")
+        return f"${symbol}", f"${symbol}: {change24} | {price} | 24h vol {vol24}"
+    except Exception as e:
+        logger.exception("Error fetching secondary token price: %s", e)
+        label = token_id.upper()
+        return f"${label}", f"${label}: price n/a"
 
-        # Be defensive with keys
-        symbol = data.get("symbol", token_id)
-        change24 = data.get("change24", "24h +/-0.00%")
-        price = data.get("price", "price n/a")
-        vol24 = data.get("vol24", "vol n/a")
 
+# kiss_anchor kept for blessnow and any callers that pass a token directly
+def kiss_anchor(token_id: Optional[str]) -> str:
+    token_id = (token_id or "weedcoin").strip()
+    try:
+        data = get_anchor(token_id)
+        if not data:
+            return f"{token_id.upper()}: price n/a"
+        symbol   = data.get("symbol", token_id.upper())
+        change24 = data.get("change24", "+/-0.00%")
+        price    = data.get("price", "n/a")
+        vol24    = data.get("vol24", "$0")
         return f"{symbol}: {change24} | {price} | 24h vol {vol24}"
     except Exception as e:
         logger.exception("Error getting anchor for %s: %s", token_id, e)
-        return f"{token_id}: price n/a | vol n/a | 24h +/-0.00%"
-
-
-def _normalize_hub_fields(hub: Any, hub_name: Optional[str], city: Optional[str], tier: Optional[str]):
-    """
-    Supports both old calling style (hub_name str) and new hub dict style.
-    """
-    if isinstance(hub, dict):
-        tz = hub.get("tz")
-        hub_id = hub.get("hub") or hub.get("name") or hub_name
-        hub_tier = hub.get("tier") or tier
-        hub_city = city
-        return hub_id, hub_city, hub_tier, tz
-
-    return hub_name, city, tier, None
-
-
-def _time_phase_for_tz(tz_name: Optional[str]) -> str:
-    """Return whether this blessing is for day or night."""
-    try:
-        if not tz_name:
-            return "day"
-        tz = pytz.timezone(tz_name)
-        hour = dt.datetime.now(tz).hour
-        return "day" if 4 <= hour < 16 else "night"
-    except Exception:
-        return "day"
+        return f"{token_id.upper()}: price n/a"
 
 
 def build_ritual_text(
     hub: Any = None,
-    token_id: Optional[str] = None,
     *,
-    hub_name: Optional[str] = None,
     city: Optional[str] = None,
+    hub_name: Optional[str] = None,
     tier: Optional[str] = None,
-):
+) -> str:
     """
-    Build the formatted ritual message.
+    Build the 4:20 Green Hour ritual message.
 
-    New usage (recommended):
-      build_ritual_text(hub_dict, token_id=..., city=...)
-
-    Backward-compatible usage:
-      build_ritual_text(hub_name="America/New_York", token_id=...)
+    Sections:
+      1. Green Hour header — location
+      2. Navigator's Blessing
+      3. $WEEDCOIN price   — Weedcoin OG on Solana, global cannabis culture coin
+      4. Secondary token   — any token set via SECONDARY_TOKEN env
+      5. Joke / meme send-off
     """
     try:
         from services.navigator_blessing import get_blessing
 
-        resolved_hub_name, resolved_city, _resolved_tier, resolved_tz = _normalize_hub_fields(
-            hub, hub_name, city, tier
-        )
+        if isinstance(hub, dict):
+            display_place = city or hub.get("display") or hub.get("hub") or "your timezone"
+        else:
+            display_place = city or hub_name or "your timezone"
 
-        display_place = resolved_city or resolved_hub_name or "your timezone"
-        phase = _time_phase_for_tz(resolved_tz)
-
-        blessing = get_blessing()
-        day_night_line = f"Bless your {phase}: {blessing}"
-
-        # Token objects in cannabis_tokens.json may vary.
-        # Normalize to avoid showing $WEED (not $WEEDCOIN) accidentally.
-        token_obj = _pick(MEDIA.get("tokens", []), {"symbol": "WEEDCOIN", "name": "Weedcoin"})
-        token_symbol = (token_obj.get("symbol") or "WEEDCOIN").strip()
-        token_name = sanitize_text((token_obj.get("name") or "Weedcoin").strip())
-
-        # Prefer explicit token_id argument if provided
-        anchor_token_id = (token_id or token_symbol or DEFAULT_TOKEN).lower()
-        anchor = kiss_anchor(anchor_token_id)
-
-        safety = sanitize_text(_pick(MEDIA.get("safety", []), "DYOR | Use 2FA | Secure your keys"))
-
-        quote_obj = _pick(MEDIA.get("quotes", []), {})
-        culture_line = ""
-        if isinstance(quote_obj, dict) and quote_obj:
-            q = sanitize_text((quote_obj.get("quote") or "").strip())
-            src = sanitize_text((quote_obj.get("source") or "Cannabis Culture").strip())
-            if q:
-                culture_line = f"\"{q}\" - {src}"
-
-        joke = sanitize_text(get_rotating_joke())
+        blessing                    = get_blessing()
+        weedcoin_price_line         = _weedcoin_line()
+        secondary_label, secondary_price_line = _secondary_line()
+        joke                        = sanitize_text(get_rotating_joke())
 
         lines = [
-            f"SPARK IT UP: 4:20 in {display_place}!",
+            f"🌿 4:20 — {display_place}",
             "",
-            "Navigator's Blessing",
-            day_night_line,
+            blessing,
             "",
-            f"Featured Token: {token_name}",
-            anchor,
+            "💰 $WEEDCOIN — Weedcoin OG | Solana | Cannabis Culture",
+            weedcoin_price_line,
             "",
-            "Scam Watch",
-            safety,
+            f"📈 {secondary_label}",
+            secondary_price_line,
+            "",
+            joke,
         ]
-
-        if culture_line:
-            lines += ["", "Cannabis Culture", culture_line]
-
-        lines += ["", "Weedcoin OG Meme/Joke", joke]
-
-        lines += ["", "Spark responsibly. Hold wise."]
 
         return "\n".join(lines)
 
     except Exception as e:
-        logger.exception("Error building ritual text for hub=%s: %s", hub_name or hub, e)
+        logger.exception("Error building ritual text: %s", e)
         place = city or hub_name or "your timezone"
-        return f"SPARK IT UP: 4:20 in {place}!\nError generating ritual. Please retry."
+        return f"🌿 4:20 — {place}\nError generating ritual. Please retry."

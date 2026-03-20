@@ -1,15 +1,12 @@
 import os
 import logging
 import datetime as dt
-import asyncio
 import pytz
 
 from services.ritual import build_ritual_text
-from services.x_poster import post_mirror
 
 logger = logging.getLogger(__name__)
 dispatch_logger = logging.getLogger("toka.dispatch")
-
 
 _EPOCH = dt.date(2024, 1, 1)
 
@@ -28,16 +25,11 @@ def _pick_rotating(items, idx: int):
 
 async def ritual_call(context):
     """
-    Executes the 4:20 ritual for a TIMEZONE job.
+    Execute the 4:20 ritual for a timezone group.
 
     context.job.data must include:
-      - tz: str
-      - hubs: list[hub_dict] where each hub_dict includes:
-          - hub: str
-          - tier: str
-          - tz: str
-          - display: str (optional — friendly name shown in message, falls back to tz)
-    Blesses the timezone, not individual cities. Hub rotates daily within the timezone.
+      - tz:   str        — IANA timezone name
+      - hubs: list[dict] — hub dicts for this timezone
     """
     try:
         payload = getattr(context, "job", None).data if getattr(context, "job", None) else None
@@ -48,66 +40,35 @@ async def ritual_call(context):
         tz_name = payload.get("tz")
         hubs = payload.get("hubs") or []
         if not tz_name or not isinstance(hubs, list) or not hubs:
-            logger.error("Ritual payload must include tz and non-empty hubs list. payload=%s", payload)
+            logger.error("Ritual payload must include tz and non-empty hubs. payload=%s", payload)
             return
-
-        # Global token override (optional)
-        token_id = (
-            context.application.bot_data.get("token_override")
-            if getattr(context, "application", None)
-            else None
-        ) or os.getenv("DEFAULT_TOKEN", "weedcoin")
 
         chat_id = os.getenv("TELEGRAM_GLOBAL_CHAT_ID")
         if not chat_id:
-            logger.error("TELEGRAM_GLOBAL_CHAT_ID not set. Cannot send ritual for tz=%s", tz_name)
+            logger.error("TELEGRAM_GLOBAL_CHAT_ID not set. tz=%s", tz_name)
             return
 
-        day_idx = _date_index_for_tz(tz_name)
-
-        # Policy B: rotate hubs daily within the timezone (everyone eats)
+        day_idx    = _date_index_for_tz(tz_name)
         chosen_hub = _pick_rotating(hubs, day_idx)
         if not isinstance(chosen_hub, dict):
             logger.error("Chosen hub invalid. tz=%s chosen=%s", tz_name, chosen_hub)
             return
 
-        hub_id = chosen_hub.get("hub", "hub")
-        # Use optional friendly display name, fall back to raw tz string
+        hub_id  = chosen_hub.get("hub", "hub")
         display = chosen_hub.get("display") or tz_name
 
-        logger.info(
-            "Ritual start tz=%s hub=%s token=%s",
-            tz_name,
-            hub_id,
-            token_id,
-        )
+        logger.info("Ritual start tz=%s hub=%s", tz_name, hub_id)
 
-        # Bless the timezone — display name shown in the message
-        text = build_ritual_text(
-            chosen_hub,
-            token_id=token_id,
-            city=display,
-        )
+        text = build_ritual_text(chosen_hub, city=display)
 
         try:
             await context.bot.send_message(chat_id=chat_id, text=text)
         except Exception as e:
             dispatch_logger.error(
                 "dispatch_failure side=telegram tz=%s hub=%s chat_id=%s error=%s",
-                tz_name,
-                hub_id,
-                chat_id,
-                e,
+                tz_name, hub_id, chat_id, e,
             )
             raise
-
-        mirror_ok = await asyncio.to_thread(post_mirror, text)
-        if not mirror_ok:
-            dispatch_logger.warning(
-                "dispatch_failure side=x tz=%s hub=%s reason=mirror_not_sent",
-                tz_name,
-                hub_id,
-            )
 
         logger.info("Ritual sent tz=%s hub=%s display=%s", tz_name, hub_id, display)
 
