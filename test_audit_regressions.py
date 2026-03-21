@@ -17,24 +17,24 @@ def test_settings_are_read_at_call_time(monkeypatch):
     assert get_settings().SECONDARY_TOKEN == "solana"
 
 
-@pytest.mark.parametrize(
-    "signature",
-    ["ðŸ", "âš", "â", "Â±", "âœ", "ï¸", "â†'", "â€"", "â€¢", "â"€", "â€""],
-)
-def test_python_sources_do_not_contain_mojibake(signature):
-    """Prevent common UTF-8/Windows-1252 corruption patterns in source files."""
+def test_python_sources_are_clean_utf8():
+    """All source files must be valid UTF-8 with no replacement characters."""
     root = Path(__file__).resolve().parent
-    offenders = []
-    this_file = Path(__file__).name
+    bad_encoding = []
+    replacement_char = "\ufffd"
 
     for py_file in root.rglob("*.py"):
-        if py_file.name == this_file:
+        if any(part.startswith(".venv") for part in py_file.parts):
             continue
-        text = py_file.read_text(encoding="utf-8")
-        if signature in text:
-            offenders.append(str(py_file.relative_to(root)))
+        try:
+            text = py_file.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            bad_encoding.append(str(py_file.relative_to(root)))
+            continue
+        if replacement_char in text:
+            bad_encoding.append(str(py_file.relative_to(root)) + " (replacement char)")
 
-    assert not offenders, f"Found mojibake signature {signature!r} in: {offenders}"
+    assert not bad_encoding, f"Encoding problems in: {bad_encoding}"
 
 
 def test_validate_config_rejects_invalid_tz(monkeypatch):

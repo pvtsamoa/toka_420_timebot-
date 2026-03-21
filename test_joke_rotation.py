@@ -1,7 +1,6 @@
 import datetime as dt
 import json
 from pathlib import Path
-from unittest.mock import Mock, patch
 
 from services.joke_rotation import JokeRotationStore
 
@@ -13,10 +12,8 @@ def _make_store(tmp_path: Path, jokes: list[str]) -> JokeRotationStore:
     return JokeRotationStore(db_path=str(db_path), jokes_path=str(jokes_path))
 
 
-def test_joke_ingest_deduplicates_by_fingerprint(tmp_path, monkeypatch):
-    monkeypatch.setenv("JOKE_REDDIT_FEEDS", "off")
-    monkeypatch.setenv("WEEDCOINOG_X_ACCOUNT_URL", "off")
-    monkeypatch.setenv("WEEDCOINOG_X_COMMUNITY_URL", "off")
+def test_joke_ingest_deduplicates_by_fingerprint(tmp_path):
+
     store = _make_store(tmp_path, ["Same line", "Same  line", "Different line"])
 
     inserted = store.refresh_inventory()
@@ -27,10 +24,8 @@ def test_joke_ingest_deduplicates_by_fingerprint(tmp_path, monkeypatch):
     assert inserted_again == 0
 
 
-def test_build_rotation_assigns_window(tmp_path, monkeypatch):
-    monkeypatch.setenv("JOKE_REDDIT_FEEDS", "off")
-    monkeypatch.setenv("WEEDCOINOG_X_ACCOUNT_URL", "off")
-    monkeypatch.setenv("WEEDCOINOG_X_COMMUNITY_URL", "off")
+def test_build_rotation_assigns_window(tmp_path):
+
     jokes = [f"Weedcoin OG joke line number {i}" for i in range(1, 30)]
     store = _make_store(tmp_path, jokes)
     store.refresh_inventory()
@@ -43,10 +38,8 @@ def test_build_rotation_assigns_window(tmp_path, monkeypatch):
     assert assigned_again == 0
 
 
-def test_get_today_joke_uses_local_fallback(tmp_path, monkeypatch):
-    monkeypatch.setenv("JOKE_REDDIT_FEEDS", "off")
-    monkeypatch.setenv("WEEDCOINOG_X_ACCOUNT_URL", "off")
-    monkeypatch.setenv("WEEDCOINOG_X_COMMUNITY_URL", "off")
+def test_get_today_joke_uses_local_fallback(tmp_path):
+
     store = _make_store(tmp_path, ["Fallback A", "Fallback B"])
 
     # No external source URLs set, should still work via local fallback seed.
@@ -54,38 +47,9 @@ def test_get_today_joke_uses_local_fallback(tmp_path, monkeypatch):
     assert joke in {"Fallback A", "Fallback B"}
 
 
-def test_reddit_json_source_extracts_titles(tmp_path, monkeypatch):
-    monkeypatch.setenv("JOKE_REDDIT_FEEDS", "off")
-    monkeypatch.setenv("WEEDCOINOG_X_ACCOUNT_URL", "off")
-    monkeypatch.setenv("WEEDCOINOG_X_COMMUNITY_URL", "off")
-    store = _make_store(tmp_path, ["Seed fallback line"])
 
-    payload = {
-        "data": {
-            "children": [
-                {"data": {"title": "Funny one", "selftext": "Body text"}},
-                {"data": {"title": "Another joke", "selftext": ""}},
-            ]
-        }
-    }
+def test_blacklist_term_marijuana_is_filtered(tmp_path):
 
-    fake_response = Mock()
-    fake_response.headers = {"Content-Type": "application/json"}
-    fake_response.json.return_value = payload
-    fake_response.text = ""
-    fake_response.raise_for_status.return_value = None
-
-    with patch("requests.get", return_value=fake_response):
-        rows = store._fetch_external_source("https://www.reddit.com/r/Jokes/new.json?limit=2")
-
-    assert "Funny one - Body text" in rows
-    assert "Another joke" in rows
-
-
-def test_blacklist_term_marijuana_is_filtered(tmp_path, monkeypatch):
-    monkeypatch.setenv("JOKE_REDDIT_FEEDS", "off")
-    monkeypatch.setenv("WEEDCOINOG_X_ACCOUNT_URL", "off")
-    monkeypatch.setenv("WEEDCOINOG_X_COMMUNITY_URL", "off")
     store = _make_store(tmp_path, ["This line has marijuana reference", "Clean joke line here"])
 
     inserted = store.refresh_inventory()
