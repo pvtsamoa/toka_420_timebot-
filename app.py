@@ -16,6 +16,8 @@ from scheduler import schedule_hourly_420
 from services.ritual_time import ritual_call
 
 from commands.blessnow import blessnow
+from commands.news import news
+from commands.token import token, health_check
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -107,6 +109,9 @@ async def set_bot_info(app: Application) -> None:
         )
         await app.bot.set_my_commands([
             BotCommand("blessnow", "Trigger the current Green Hour blessing now"),
+            BotCommand("news",     "Crypto & market news"),
+            BotCommand("token",    "Token price lookup (default: $WEEDCOIN)"),
+            BotCommand("health",   "Quick health check"),
         ])
         logger.info("Bot info updated")
     except Exception as e:
@@ -130,6 +135,9 @@ def build_app() -> Application:
 
     app.add_error_handler(on_error)
     app.add_handler(CommandHandler("blessnow", blessnow))
+    app.add_handler(CommandHandler("news", news))
+    app.add_handler(CommandHandler("token", token))
+    app.add_handler(CommandHandler("health", health_check))
 
     async def _shutdown_scheduler(app: Application) -> None:
         sched = app.bot_data.get("apscheduler")
