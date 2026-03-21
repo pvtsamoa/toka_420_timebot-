@@ -1,0 +1,246 @@
+/* ── Reset & base ───────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: #000;
+  color: #f0f0f0;
+  font-family: 'Space Mono', 'Courier New', monospace;
+  min-height: 100vh;
+}
+
+/* ── Page ───────────────────────────────────────── */
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+}
+
+/* ── Header ─────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1.2rem 0 0.8rem;
+  border-bottom: 1px solid #39ff1430;
+  margin-bottom: 1.2rem;
+}
+.logo {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #39ff14;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 14px #39ff1480;
+}
+.tagline {
+  font-size: 0.72rem;
+  color: #39ff1455;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ── 3-column layout ────────────────────────────── */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 420px 1fr;
+  grid-template-areas: "ritual globe hubs";
+  gap: 1.4rem;
+  align-items: start;
+}
+.ritual-col { grid-area: ritual; }
+.globe-col  { grid-area: globe;  display: flex; flex-direction: column; align-items: center; }
+.hub-col    { grid-area: hubs; }
+
+/* ── Globe ──────────────────────────────────────── */
+.globe-wrap {
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 50px #39ff1418, 0 0 100px #39ff140a;
+}
+
+/* ── Status banner ──────────────────────────────── */
+.status-banner {
+  margin-top: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  text-align: center;
+  letter-spacing: 0.03em;
+  width: 100%;
+}
+.status-banner.live {
+  background: #39ff1412;
+  border: 1px solid #39ff1450;
+  color: #39ff14;
+  text-shadow: 0 0 8px #39ff1480;
+}
+.status-banner.waiting {
+  background: #111;
+  border: 1px solid #222;
+  color: #888;
+}
+.countdown { color: #39ff14; font-size: 0.92rem; }
+.next-city { color: #666; }
+.pulse-dot {
+  position: relative;
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #39ff14;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #39ff14;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  70%  { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* ── Ritual card ────────────────────────────────── */
+.ritual-card {
+  padding: 1.2rem 1.4rem;
+  background: #0e0e0e;
+  border-left: 3px solid #39ff14;
+  border-radius: 0 6px 6px 0;
+}
+.ritual-header {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #39ff14;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+  text-shadow: 0 0 10px #39ff1440;
+}
+.blessing {
+  font-size: 0.82rem;
+  color: #bbb;
+  line-height: 1.7;
+  margin-bottom: 1.1rem;
+  font-style: italic;
+}
+.prices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.9rem;
+  background: #080808;
+  border-radius: 4px;
+  border: 1px solid #1e1e1e;
+}
+.price-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.72rem;
+}
+.price-label { color: #777; }
+.price-value { color: #ccc; }
+.up   { color: #39ff14; }
+.down { color: #ff4d4d; }
+.muted { color: #555; }
+.joke {
+  font-size: 0.76rem;
+  color: #777;
+  border-top: 1px solid #1a1a1a;
+  padding-top: 0.8rem;
+  line-height: 1.65;
+}
+
+/* ── Hub list (right column) ────────────────────── */
+.hub-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #39ff1430 transparent;
+}
+.hub-list::-webkit-scrollbar { width: 4px; }
+.hub-list::-webkit-scrollbar-thumb { background: #39ff1430; border-radius: 2px; }
+
+.hub-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 5px;
+  border: 1px solid #1a1a1a;
+  background: #0a0a0a;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.hub-item:hover { border-color: #39ff1430; }
+.hub-item.active {
+  border-color: #39ff14;
+  background: #0a160a;
+  box-shadow: 0 0 10px #39ff1420;
+}
+.hi-emoji {
+  font-size: 1rem;
+  line-height: 1.2;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+.hi-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.hi-display {
+  font-size: 0.7rem;
+  color: #ccc;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hi-meta {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.65rem;
+}
+.hi-time { color: #444; }
+.hi-live { color: #39ff14; text-shadow: 0 0 5px #39ff1470; }
+.hi-cd   { color: #555; }
+
+/* ── Footer ─────────────────────────────────────── */
+.footer {
+  text-align: center;
+  font-size: 0.65rem;
+  color: #2a2a2a;
+  padding: 1.5rem 0 0;
+  border-top: 1px solid #0e0e0e;
+  letter-spacing: 0.06em;
+  margin-top: 1.5rem;
+}
+
+/* ── Mobile ─────────────────────────────────────── */
+@media (max-width: 900px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "globe"
+      "ritual"
+      "hubs";
+    gap: 1rem;
+  }
+  .hub-list {
+    max-height: none;
+    overflow-y: visible;
+  }
+  .ritual-card {
+    padding: 1rem 1.1rem;
+  }
+}

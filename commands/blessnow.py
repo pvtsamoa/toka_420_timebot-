@@ -36,11 +36,6 @@ async def blessnow(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not message or not chat:
         return
 
-    target_chat_id = os.getenv("TELEGRAM_GLOBAL_CHAT_ID", "").strip()
-    if target_chat_id and str(chat.id) != target_chat_id:
-        await message.reply_text("Manual blessing is only enabled in the configured global ritual chat.")
-        return
-
     payload = _build_payload_for_now(context.application)
     shim_context = SimpleNamespace(
         job=SimpleNamespace(data=payload),

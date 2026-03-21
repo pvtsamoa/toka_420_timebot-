@@ -1,4 +1,5 @@
 import os
+import asyncio
 import logging
 import datetime as dt
 import pytz
@@ -61,14 +62,19 @@ async def ritual_call(context):
 
         text = build_ritual_text(chosen_hub, city=display)
 
-        try:
-            await context.bot.send_message(chat_id=chat_id, text=text)
-        except Exception as e:
-            dispatch_logger.error(
-                "dispatch_failure side=telegram tz=%s hub=%s chat_id=%s error=%s",
-                tz_name, hub_id, chat_id, e,
-            )
-            raise
+        for attempt in range(2):
+            try:
+                await context.bot.send_message(chat_id=chat_id, text=text)
+                break
+            except Exception as e:
+                if attempt == 1:
+                    dispatch_logger.error(
+                        "dispatch_failure side=telegram tz=%s hub=%s chat_id=%s error=%s",
+                        tz_name, hub_id, chat_id, e,
+                    )
+                    raise
+                logger.warning("send_message failed (attempt 1), retrying in 3s: %s", e)
+                await asyncio.sleep(3)
 
         logger.info("Ritual sent tz=%s hub=%s display=%s", tz_name, hub_id, display)
 

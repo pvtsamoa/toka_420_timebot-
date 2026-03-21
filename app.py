@@ -159,7 +159,7 @@ def build_app() -> Application:
         except Exception as e:
             logger.warning("Could not warm joke rotation store: %s", e)
 
-        sched = AsyncIOScheduler(timezone=os.getenv("TZ", "America/Los_Angeles"))
+        sched = AsyncIOScheduler(timezone="UTC")
         sched.start()
         schedule_hourly_420(sched, ritual_call, app=app)
         logger.info("Scheduler armed: %d jobs", len(sched.get_jobs()))

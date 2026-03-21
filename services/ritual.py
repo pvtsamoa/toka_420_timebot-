@@ -98,8 +98,10 @@ def build_ritual_text(
 
         if isinstance(hub, dict):
             display_place = city or hub.get("display") or hub.get("hub") or "your timezone"
+            region_emoji  = hub.get("region_emoji", "🌿")
         else:
             display_place = city or hub_name or "your timezone"
+            region_emoji  = "🌿"
 
         blessing                    = get_blessing()
         weedcoin_price_line         = _weedcoin_line()
@@ -107,7 +109,7 @@ def build_ritual_text(
         joke                        = sanitize_text(get_rotating_joke())
 
         lines = [
-            f"🌿 4:20 — {display_place}",
+            f"{region_emoji} 4:20 — {display_place}",
             "",
             blessing,
             "",
@@ -125,4 +127,5 @@ def build_ritual_text(
     except Exception as e:
         logger.exception("Error building ritual text: %s", e)
         place = city or hub_name or "your timezone"
-        return f"🌿 4:20 — {place}\nError generating ritual. Please retry."
+        emoji = hub.get("region_emoji", "🌿") if isinstance(hub, dict) else "🌿"
+        return f"{emoji} 4:20 — {place}\nError generating ritual. Please retry."

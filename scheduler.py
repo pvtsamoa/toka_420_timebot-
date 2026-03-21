@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import pytz
 import datetime as dt
 import logging
@@ -102,6 +103,11 @@ def schedule_hourly_420(scheduler, callback, app=None):
             logger.debug("No timezone at 4:20 right now")
             return
 
+        # Dedup guard: track the epoch-minute each timezone last fired.
+        # Prevents double-fire if the bot restarts mid-minute during a 4:20.
+        fired = app.bot_data.setdefault("_fired_this_minute", {})
+        now_epoch_min = int(time.time()) // 60
+
         # Group matching hubs by timezone (multiple hubs can share a tz)
         tz_groups = {}
         for hub in matching:
@@ -109,6 +115,10 @@ def schedule_hourly_420(scheduler, callback, app=None):
             tz_groups.setdefault(tz, []).append(hub)
 
         for tz_name, hubs_in_tz in tz_groups.items():
+            if fired.get(tz_name) == now_epoch_min:
+                logger.debug("Dedup: already fired %s this minute, skipping", tz_name)
+                continue
+
             payload = {
                 "tz": tz_name,
                 "hubs": hubs_in_tz,
@@ -118,6 +128,7 @@ def schedule_hourly_420(scheduler, callback, app=None):
 
             try:
                 await callback(ctx)
+                fired[tz_name] = now_epoch_min
                 logger.info("Ritual fired for %s (%d hubs)", tz_name, len(hubs_in_tz))
             except Exception as e:
                 logger.exception("Ritual failed for %s: %s", tz_name, e)
