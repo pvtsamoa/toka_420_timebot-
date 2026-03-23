@@ -103,8 +103,11 @@ def schedule_hourly_420(scheduler, callback, app=None):
             logger.debug("No timezone at 4:20 right now")
             return
 
-        # Dedup guard: track the epoch-minute each timezone last fired.
-        # Prevents double-fire if the bot restarts mid-minute during a 4:20.
+        # Dedup guard: track the epoch-minute each timezone last fired within
+        # this process lifetime. Prevents the scheduler from firing twice in the
+        # same minute (e.g., a misfired APScheduler tick). NOTE: this dict resets
+        # on process restart, so a restart exactly during a 4:20 window will still
+        # send the ritual once — that is acceptable behaviour.
         fired = app.bot_data.setdefault("_fired_this_minute", {})
         now_epoch_min = int(time.time()) // 60
 
@@ -140,6 +143,7 @@ def schedule_hourly_420(scheduler, callback, app=None):
         id="global_420_check",
         name="global_420_check",
         replace_existing=True,
+        next_run_time=dt.datetime.now(dt.timezone.utc),
     )
 
     logger.info(

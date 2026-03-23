@@ -60,7 +60,7 @@ async def ritual_call(context):
 
         logger.info("Ritual start tz=%s hub=%s", tz_name, hub_id)
 
-        text = build_ritual_text(chosen_hub, city=display)
+        text = await asyncio.to_thread(build_ritual_text, chosen_hub, city=display)
 
         for attempt in range(2):
             try:

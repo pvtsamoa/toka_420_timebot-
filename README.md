@@ -9,11 +9,10 @@ joke/meme rotation.
 ## Features
 - Modular design (each service can be swapped or removed without breaking the bot)
 - Telegram commands:
-  - `/status` → check if the schedule is set and ready to deploy on time
-  - `/news` → pull global cannabis and cannabis crypto news
-  - `/studies` → cannabis research, health benefits, nutrition, land regeneration & whole plant awareness
-  - `/token <symbol>` → fetch current Weedcoin price action and market trends
   - `/blessnow` → manually push the current Green Hours blessing right now
+  - `/news` → pull global cannabis and cannabis crypto news
+  - `/token <symbol>` → fetch current Weedcoin price action and market trends
+  - `/health` → quick health check
 - Automated ritual includes:
   - Day/night blessing
   - Weedcoin price anchor

@@ -1,13 +1,13 @@
 import xml.etree.ElementTree as ET
 import requests
 import logging
+import os
 import time
 import asyncio
 from html import escape, unescape
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
-from config import get_settings
 from services.content_policy import sanitize_text
 
 logger = logging.getLogger(__name__)
@@ -51,8 +51,9 @@ REGIONAL_FEEDS = {
     ],
 }
 
-# Track user call counts for rotation
+# Track user call counts for rotation (and timestamps for pruning)
 _user_calls = {}
+_user_calls_ts: dict = {}
 
 
 async def _fetch_one(url: str):
@@ -160,6 +161,13 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
     _rate_limit_cache[user_id] = now
 
+    # Prune stale _user_calls entries to prevent unbounded growth
+    stale_uc = [uid for uid, ts in _user_calls_ts.items() if now - ts > _RATE_LIMIT_TTL]
+    for uid in stale_uc:
+        _user_calls.pop(uid, None)
+        _user_calls_ts.pop(uid, None)
+    _user_calls_ts[user_id] = now
+
     try:
         category = _get_category_cycle(int(user_id) if user_id != "unknown" else 0)
 
@@ -179,7 +187,7 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 break
 
         if not result:
-            scope = (get_settings().TELEGRAM_SCOPE or "all").lower()
+            scope = (os.getenv("TELEGRAM_SCOPE", "all") or "all").lower()
             fallback_feeds = REGIONAL_FEEDS.get(scope, [])
             for url in fallback_feeds:
                 result = await _fetch_one(url)

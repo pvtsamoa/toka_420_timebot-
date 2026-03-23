@@ -37,10 +37,9 @@ TZ=America/Los_Angeles
 
 | Command | Purpose |
 |---------|---------|
-| `/status` | Show scheduler & bot health |
-| `/news [scope]` | Latest cannabis/crypto news |
-| `/studies` | Cannabis research & education |
-| `/token [symbol]` | Get/set price ticker |
+| `/blessnow` | Trigger the current Green Hour blessing now |
+| `/news` | Latest cannabis/crypto news |
+| `/token [symbol]` | Token price lookup (default: $WEEDCOIN) |
 | `/health` | Quick health check |
 
 ---
