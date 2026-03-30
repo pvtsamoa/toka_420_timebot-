@@ -12,6 +12,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from services.config_validator import validate_config
 from services.error_handler import on_error
 from services.joke_rotation import get_store
+from services.webhook import start_webhook_server
 from scheduler import schedule_hourly_420
 from services.ritual_time import ritual_call
 
@@ -144,6 +145,10 @@ def build_app() -> Application:
         if sched:
             logger.info("Shutting down APScheduler...")
             sched.shutdown(wait=False)
+        webhook_runner = app.bot_data.get("webhook_runner")
+        if webhook_runner:
+            logger.info("Shutting down webhook server...")
+            await webhook_runner.cleanup()
 
     app.post_shutdown = _shutdown_scheduler
 
@@ -164,6 +169,20 @@ def build_app() -> Application:
         schedule_hourly_420(sched, ritual_call, app=app)
         logger.info("Scheduler armed: %d jobs", len(sched.get_jobs()))
         app.bot_data["apscheduler"] = sched
+
+        if os.getenv("WEBHOOK_ENABLED", "false").lower() in ("1", "true", "yes"):
+            chat_id = os.getenv("TELEGRAM_GLOBAL_CHAT_ID", "")
+            webhook_port = int(os.getenv("WEBHOOK_PORT", "8080"))
+            webhook_secret = os.getenv("WEBHOOK_SECRET", "")
+            db_path = os.path.join(DATA_DIR, "jokes.db")
+            runner = await start_webhook_server(
+                bot=app.bot,
+                chat_id=chat_id,
+                db_path=db_path,
+                secret=webhook_secret,
+                port=webhook_port,
+            )
+            app.bot_data["webhook_runner"] = runner
 
     app.post_init = _post_init
 
