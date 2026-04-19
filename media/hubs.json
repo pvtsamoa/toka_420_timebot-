@@ -1,0 +1,342 @@
+[
+  {
+    "hub": "americas_anchorage",
+    "tz": "America/Anchorage",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "Anchorage · Fairbanks",
+    "lat": 61.22,
+    "lng": -149.90,
+    "cities": ["Anchorage", "Fairbanks"]
+  },
+  {
+    "hub": "americas_los_angeles",
+    "tz": "America/Los_Angeles",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "Los Angeles · San Francisco · Seattle",
+    "lat": 34.05,
+    "lng": -118.24,
+    "cities": ["Los Angeles", "San Francisco", "Seattle"]
+  },
+  {
+    "hub": "americas_denver",
+    "tz": "America/Denver",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "Denver · Salt Lake City · Phoenix",
+    "lat": 39.74,
+    "lng": -104.98,
+    "cities": ["Denver", "Salt Lake City", "Phoenix"]
+  },
+  {
+    "hub": "americas_chicago",
+    "tz": "America/Chicago",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "Chicago · Dallas · Houston",
+    "lat": 41.88,
+    "lng": -87.63,
+    "cities": ["Chicago", "Dallas", "Houston"]
+  },
+  {
+    "hub": "americas_mexico_city",
+    "tz": "America/Mexico_City",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "Mexico City · Guadalajara · Monterrey",
+    "lat": 19.43,
+    "lng": -99.13,
+    "cities": ["Mexico City", "Guadalajara", "Monterrey"]
+  },
+  {
+    "hub": "americas_new_york",
+    "tz": "America/New_York",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "New York · Toronto · Miami",
+    "lat": 40.71,
+    "lng": -74.01,
+    "cities": ["New York", "Toronto", "Miami"]
+  },
+  {
+    "hub": "americas_bogota",
+    "tz": "America/Bogota",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "Bogotá · Medellín · Lima · Quito",
+    "lat": 4.71,
+    "lng": -74.07,
+    "cities": ["Bogotá", "Medellín", "Lima", "Quito"]
+  },
+  {
+    "hub": "americas_caracas",
+    "tz": "America/Caracas",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "Caracas · Maracaibo",
+    "lat": 10.48,
+    "lng": -66.88,
+    "cities": ["Caracas", "Maracaibo"]
+  },
+  {
+    "hub": "americas_halifax",
+    "tz": "America/Halifax",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "Halifax · San Juan · Santo Domingo",
+    "lat": 44.65,
+    "lng": -63.57,
+    "cities": ["Halifax", "San Juan", "Santo Domingo"]
+  },
+  {
+    "hub": "americas_santiago",
+    "tz": "America/Santiago",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "Santiago · La Paz · Asunción",
+    "lat": -33.45,
+    "lng": -70.67,
+    "cities": ["Santiago", "La Paz", "Asunción"]
+  },
+  {
+    "hub": "americas_sao_paulo",
+    "tz": "America/Sao_Paulo",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "São Paulo · Rio de Janeiro · Brasília",
+    "lat": -23.55,
+    "lng": -46.63,
+    "cities": ["São Paulo", "Rio de Janeiro", "Brasília"]
+  },
+  {
+    "hub": "americas_buenos_aires",
+    "tz": "America/Argentina/Buenos_Aires",
+    "region": "Americas",
+    "region_emoji": "🦅",
+    "display": "Buenos Aires · Montevideo",
+    "lat": -34.60,
+    "lng": -58.38,
+    "cities": ["Buenos Aires", "Montevideo"]
+  },
+  {
+    "hub": "europe_africa_london",
+    "tz": "Europe/London",
+    "region": "Europe / Africa",
+    "region_emoji": "🌿",
+    "display": "London · Dublin · Lisbon",
+    "lat": 51.51,
+    "lng": -0.13,
+    "cities": ["London", "Dublin", "Lisbon"]
+  },
+  {
+    "hub": "europe_africa_lagos",
+    "tz": "Africa/Lagos",
+    "region": "Europe / Africa",
+    "region_emoji": "🌿",
+    "display": "Lagos · Accra · Dakar · Abidjan",
+    "lat": 6.52,
+    "lng": 3.38,
+    "cities": ["Lagos", "Accra", "Dakar", "Abidjan"]
+  },
+  {
+    "hub": "europe_africa_berlin",
+    "tz": "Europe/Berlin",
+    "region": "Europe / Africa",
+    "region_emoji": "🌿",
+    "display": "Berlin · Paris · Amsterdam · Madrid",
+    "lat": 52.52,
+    "lng": 13.40,
+    "cities": ["Berlin", "Paris", "Amsterdam", "Madrid"]
+  },
+  {
+    "hub": "europe_africa_cairo",
+    "tz": "Africa/Cairo",
+    "region": "Europe / Africa",
+    "region_emoji": "🌿",
+    "display": "Cairo · Tunis · Tripoli",
+    "lat": 30.04,
+    "lng": 31.24,
+    "cities": ["Cairo", "Tunis", "Tripoli"]
+  },
+  {
+    "hub": "europe_africa_johannesburg",
+    "tz": "Africa/Johannesburg",
+    "region": "Europe / Africa",
+    "region_emoji": "🌿",
+    "display": "Johannesburg · Cape Town · Harare",
+    "lat": -26.20,
+    "lng": 28.04,
+    "cities": ["Johannesburg", "Cape Town", "Harare"]
+  },
+  {
+    "hub": "europe_africa_nairobi",
+    "tz": "Africa/Nairobi",
+    "region": "Europe / Africa",
+    "region_emoji": "🌿",
+    "display": "Nairobi · Addis Ababa · Kampala",
+    "lat": -1.29,
+    "lng": 36.82,
+    "cities": ["Nairobi", "Addis Ababa", "Kampala"]
+  },
+  {
+    "hub": "europe_africa_istanbul",
+    "tz": "Europe/Istanbul",
+    "region": "Europe / Africa",
+    "region_emoji": "🌿",
+    "display": "Istanbul · Athens · Bucharest",
+    "lat": 41.01,
+    "lng": 28.95,
+    "cities": ["Istanbul", "Athens", "Bucharest"]
+  },
+  {
+    "hub": "me_asia_riyadh",
+    "tz": "Asia/Riyadh",
+    "region": "Middle East / South Asia",
+    "region_emoji": "🪷",
+    "display": "Riyadh · Kuwait City · Baghdad",
+    "lat": 24.69,
+    "lng": 46.72,
+    "cities": ["Riyadh", "Kuwait City", "Baghdad"]
+  },
+  {
+    "hub": "me_asia_tehran",
+    "tz": "Asia/Tehran",
+    "region": "Middle East / South Asia",
+    "region_emoji": "🪷",
+    "display": "Tehran · Isfahan",
+    "lat": 35.69,
+    "lng": 51.39,
+    "cities": ["Tehran", "Isfahan"]
+  },
+  {
+    "hub": "me_asia_dubai",
+    "tz": "Asia/Dubai",
+    "region": "Middle East / South Asia",
+    "region_emoji": "🪷",
+    "display": "Dubai · Abu Dhabi · Muscat",
+    "lat": 25.20,
+    "lng": 55.27,
+    "cities": ["Dubai", "Abu Dhabi", "Muscat"]
+  },
+  {
+    "hub": "me_asia_kabul",
+    "tz": "Asia/Kabul",
+    "region": "Middle East / South Asia",
+    "region_emoji": "🪷",
+    "display": "Kabul · Kandahar",
+    "lat": 34.53,
+    "lng": 69.17,
+    "cities": ["Kabul", "Kandahar"]
+  },
+  {
+    "hub": "me_asia_karachi",
+    "tz": "Asia/Karachi",
+    "region": "Middle East / South Asia",
+    "region_emoji": "🪷",
+    "display": "Karachi · Lahore · Islamabad",
+    "lat": 24.86,
+    "lng": 67.01,
+    "cities": ["Karachi", "Lahore", "Islamabad"]
+  },
+  {
+    "hub": "me_asia_kolkata",
+    "tz": "Asia/Kolkata",
+    "region": "Middle East / South Asia",
+    "region_emoji": "🪷",
+    "display": "Mumbai · Delhi · Bangalore · Chennai",
+    "lat": 22.57,
+    "lng": 88.36,
+    "cities": ["Mumbai", "Delhi", "Bangalore", "Chennai"]
+  },
+  {
+    "hub": "me_asia_kathmandu",
+    "tz": "Asia/Kathmandu",
+    "region": "Middle East / South Asia",
+    "region_emoji": "🪷",
+    "display": "Kathmandu · Pokhara",
+    "lat": 27.71,
+    "lng": 85.31,
+    "cities": ["Kathmandu", "Pokhara"]
+  },
+  {
+    "hub": "me_asia_dhaka",
+    "tz": "Asia/Dhaka",
+    "region": "Middle East / South Asia",
+    "region_emoji": "🪷",
+    "display": "Dhaka · Chittagong",
+    "lat": 23.72,
+    "lng": 90.41,
+    "cities": ["Dhaka", "Chittagong"]
+  },
+  {
+    "hub": "asia_pacific_bangkok",
+    "tz": "Asia/Bangkok",
+    "region": "Asia / Pacific",
+    "region_emoji": "🌺",
+    "display": "Bangkok · Ho Chi Minh City · Jakarta · Bali · Phnom Penh",
+    "lat": 13.75,
+    "lng": 100.52,
+    "cities": ["Bangkok", "Ho Chi Minh City", "Jakarta", "Bali", "Phnom Penh"]
+  },
+  {
+    "hub": "asia_pacific_yangon",
+    "tz": "Asia/Yangon",
+    "region": "Asia / Pacific",
+    "region_emoji": "🌺",
+    "display": "Yangon · Mandalay",
+    "lat": 16.87,
+    "lng": 96.19,
+    "cities": ["Yangon", "Mandalay"]
+  },
+  {
+    "hub": "asia_pacific_singapore",
+    "tz": "Asia/Singapore",
+    "region": "Asia / Pacific",
+    "region_emoji": "🌺",
+    "display": "Singapore · Shanghai · Hong Kong · Taipei · Perth",
+    "lat": 1.35,
+    "lng": 103.82,
+    "cities": ["Singapore", "Shanghai", "Hong Kong", "Taipei", "Perth"]
+  },
+  {
+    "hub": "asia_pacific_tokyo",
+    "tz": "Asia/Tokyo",
+    "region": "Asia / Pacific",
+    "region_emoji": "🌺",
+    "display": "Tokyo · Osaka · Seoul · Busan",
+    "lat": 35.69,
+    "lng": 139.69,
+    "cities": ["Tokyo", "Osaka", "Seoul", "Busan"]
+  },
+  {
+    "hub": "asia_pacific_sydney",
+    "tz": "Australia/Sydney",
+    "region": "Asia / Pacific",
+    "region_emoji": "🌺",
+    "display": "Sydney · Melbourne · Brisbane",
+    "lat": -33.87,
+    "lng": 151.21,
+    "cities": ["Sydney", "Melbourne", "Brisbane"]
+  },
+  {
+    "hub": "asia_pacific_auckland",
+    "tz": "Pacific/Auckland",
+    "region": "Asia / Pacific",
+    "region_emoji": "🌺",
+    "display": "Auckland · Wellington · Fiji",
+    "lat": -36.85,
+    "lng": 174.76,
+    "cities": ["Auckland", "Wellington", "Fiji"]
+  },
+  {
+    "hub": "asia_pacific_honolulu",
+    "tz": "Pacific/Honolulu",
+    "region": "Asia / Pacific",
+    "region_emoji": "🌺",
+    "display": "Honolulu · Maui",
+    "lat": 21.31,
+    "lng": -157.86,
+    "cities": ["Honolulu", "Maui"]
+  }
+]

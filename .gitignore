@@ -5,3 +5,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.env
+__pycache__/
+*.pyc
+data/
+logs/
+.venv/
+*.tgz
+.vercel
+.env*.local
