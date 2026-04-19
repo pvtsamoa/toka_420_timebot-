@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(176, 38, 255, 0.28), transparent 30%),
+    radial-gradient(circle at top right, rgba(0, 212, 255, 0.16), transparent 32%),
+    radial-gradient(circle at 50% 110%, rgba(109, 255, 103, 0.12), transparent 28%),
+    #0a0a0a;
+  color: #f9fafb;
+  font-family: var(--font-body), sans-serif;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.glass-panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
+  backdrop-filter: blur(18px);
+}
+
+.trippy-border {
+  position: relative;
+}
+
+.trippy-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(176, 38, 255, 0.85), rgba(0, 212, 255, 0.85), rgba(255, 228, 92, 0.75));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.display-font {
+  font-family: var(--font-display), cursive;
+}
+
+.noise-overlay {
+  position: relative;
+  isolation: isolate;
+}
+
+.noise-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.025)),
+    radial-gradient(circle at 20% 20%, rgba(255, 228, 92, 0.1), transparent 22%),
+    radial-gradient(circle at 80% 10%, rgba(0, 212, 255, 0.1), transparent 18%);
+  mix-blend-mode: screen;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+}
