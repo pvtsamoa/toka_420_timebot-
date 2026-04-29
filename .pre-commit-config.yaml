@@ -1,0 +1,28 @@
+repos:
+  # Detect secrets and credentials
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        stages: ['commit']
+
+  # Prevent committing .env files
+  - repo: local
+    hooks:
+      - id: forbid-env-files
+        name: forbid .env files
+        entry: /bin/bash -c 'if git diff --cached --name-only | grep -E "\.env|\.env\..*|secrets\.|credentials\."; then echo "ERROR: Attempted to commit sensitive files (.env, secrets, etc)"; exit 1; fi'
+        language: system
+        stages: ['commit']
+        always_run: true
+
+  # Check for hardcoded credentials
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: mixed-line-ending

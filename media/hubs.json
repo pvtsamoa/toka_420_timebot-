@@ -1,0 +1,219 @@
+[
+  {
+    "hub": "pacific_dateline",
+    "tz": "Pacific/Auckland",
+    "utc_offset": "+13",
+    "tier": "minor",
+    "cities": ["Auckland", "Wellington", "Fiji"],
+    "notes": "Web3 growing, crypto-friendly regulation"
+  },
+  {
+    "hub": "pacific_fiji",
+    "tz": "Pacific/Fiji",
+    "utc_offset": "+12",
+    "tier": "growing",
+    "cities": ["Suva", "Nadi"]
+  },
+  {
+    "hub": "australia_east",
+    "tz": "Australia/Sydney",
+    "utc_offset": "+11",
+    "tier": "minor",
+    "cities": ["Sydney", "Melbourne", "Brisbane"],
+    "notes": "Strong Web3 community, crypto-friendly regulation"
+  },
+  {
+    "hub": "australia_central",
+    "tz": "Australia/Adelaide",
+    "utc_offset": "+10.5",
+    "tier": "growing",
+    "cities": ["Adelaide", "Darwin"]
+  },
+  {
+    "hub": "oceania_east",
+    "tz": "Australia/Brisbane",
+    "utc_offset": "+10",
+    "tier": "growing",
+    "cities": ["Gold Coast", "Port Moresby"]
+  },
+  {
+    "hub": "asia_northeast",
+    "tz": "Asia/Tokyo",
+    "utc_offset": "+9",
+    "tier": "major",
+    "cities": ["Tokyo", "Osaka", "Seoul"],
+    "notes": "Major crypto hub, established exchanges, high adoption"
+  },
+  {
+    "hub": "asia_east",
+    "tz": "Asia/Singapore",
+    "utc_offset": "+8",
+    "tier": "major",
+    "cities": ["Singapore", "Hong Kong", "Manila", "Taipei"],
+    "notes": "Singapore: 68% crypto penetration, 4.19M users. Manila: 20% adoption, remittance-driven"
+  },
+  {
+    "hub": "asia_southeast",
+    "tz": "Asia/Bangkok",
+    "utc_offset": "+7",
+    "tier": "growing",
+    "cities": ["Bangkok", "Jakarta", "Hanoi", "Ho Chi Minh City"],
+    "notes": "Southeast Asia fastest growing, 20%+ adoption, mobile-first"
+  },
+  {
+    "hub": "asia_central",
+    "tz": "Asia/Dhaka",
+    "utc_offset": "+6",
+    "tier": "growing",
+    "cities": ["Dhaka", "Almaty"]
+  },
+  {
+    "hub": "asia_india",
+    "tz": "Asia/Kolkata",
+    "utc_offset": "+5.5",
+    "tier": "minor",
+    "cities": ["Mumbai", "Delhi", "Bangalore", "Colombo"],
+    "notes": "India leading APAC 69% growth, strong retail adoption"
+  },
+  {
+    "hub": "asia_pakistan",
+    "tz": "Asia/Karachi",
+    "utc_offset": "+5",
+    "tier": "growing",
+    "cities": ["Karachi", "Lahore", "Tashkent"],
+    "notes": "APAC emerging market, high mobile adoption"
+  },
+  {
+    "hub": "middle_east",
+    "tz": "Asia/Dubai",
+    "utc_offset": "+4",
+    "tier": "major",
+    "cities": ["Dubai", "Abu Dhabi", "Muscat"],
+    "notes": "UAE leader: 25.3% population holding crypto, 772 crypto companies, 0% income tax"
+  },
+  {
+    "hub": "east_africa",
+    "tz": "Africa/Nairobi",
+    "utc_offset": "+3",
+    "tier": "growing",
+    "cities": ["Nairobi", "Riyadh", "Istanbul"],
+    "notes": "Kenya leading Africa growth, mobile-first adoption (72.9% on smartphones)"
+  },
+  {
+    "hub": "africa_south",
+    "tz": "Africa/Johannesburg",
+    "utc_offset": "+2",
+    "tier": "growing",
+    "cities": ["Johannesburg", "Cape Town", "Tel Aviv", "Cairo"],
+    "notes": "South Africa leading Africa adoption, Tel Aviv blockchain innovation hub"
+  },
+  {
+    "hub": "europe_central",
+    "tz": "Europe/Berlin",
+    "utc_offset": "+1",
+    "tier": "major",
+    "cities": ["Zug", "Zurich", "Paris", "Amsterdam", "Berlin", "Barcelona", "Prague"],
+    "notes": "Zug 'Crypto Valley' - accepting BTC since 2016. Paris/Barcelona/Prague year-round Web3 hubs"
+  },
+  {
+    "hub": "africa_west",
+    "tz": "Africa/Lagos",
+    "utc_offset": "+1",
+    "tier": "major",
+    "cities": ["Lagos", "Accra"],
+    "notes": "Nigeria world's most crypto-active per capita, 60% population under 25, remittance-driven"
+  },
+  {
+    "hub": "europe_west",
+    "tz": "Europe/London",
+    "utc_offset": "+0",
+    "tier": "major",
+    "cities": ["London", "Lisbon", "Reykjavik"],
+    "notes": "London established financial hub. Lisbon major Web3 community center"
+  },
+  {
+    "hub": "atlantic_east",
+    "tz": "Atlantic/Azores",
+    "utc_offset": "-1",
+    "tier": "growing",
+    "cities": ["Azores", "Cape Verde"]
+  },
+  {
+    "hub": "atlantic_mid",
+    "tz": "America/Noronha",
+    "utc_offset": "-2",
+    "tier": "growing",
+    "cities": ["Fernando de Noronha", "South Georgia"]
+  },
+  {
+    "hub": "south_america_east",
+    "tz": "America/Sao_Paulo",
+    "utc_offset": "-3",
+    "tier": "major",
+    "cities": ["São Paulo", "Rio de Janeiro", "Buenos Aires"],
+    "notes": "Brazil 15% adult ownership, Latin America leader. 63% growth, stablecoin adoption rising 60%"
+  },
+  {
+    "hub": "caribbean",
+    "tz": "America/Halifax",
+    "utc_offset": "-4",
+    "tier": "minor",
+    "cities": ["Halifax", "San Juan", "Puerto Rico"],
+    "notes": "Puerto Rico crypto tax haven, growing Web3 community"
+  },
+  {
+    "hub": "us_eastern",
+    "tz": "America/New_York",
+    "utc_offset": "-5",
+    "tier": "major",
+    "cities": ["New York", "Miami", "Toronto", "Bogotá"],
+    "notes": "NYC: 843 crypto companies, 94 businesses accepting crypto. Miami: mayor pushing BTC for taxes. Toronto: Canada clear regulation"
+  },
+  {
+    "hub": "us_central",
+    "tz": "America/Chicago",
+    "utc_offset": "-6",
+    "tier": "minor",
+    "cities": ["Chicago", "Austin", "Houston", "Mexico City"],
+    "notes": "Austin/Texas crypto-friendly regulation. Mexico City emerging LatAm hub"
+  },
+  {
+    "hub": "us_mountain",
+    "tz": "America/Denver",
+    "utc_offset": "-7",
+    "tier": "growing",
+    "cities": ["Denver", "Phoenix", "Salt Lake City"],
+    "notes": "Wyoming/Colorado crypto-friendly states, early BTC adoption"
+  },
+  {
+    "hub": "us_pacific",
+    "tz": "America/Los_Angeles",
+    "utc_offset": "-8",
+    "tier": "major",
+    "cities": ["San Francisco", "Los Angeles", "Seattle", "Vancouver"],
+    "notes": "SF: avg portfolio $55k+, tech/crypto capital. Vancouver: Canada Web3 hub"
+  },
+  {
+    "hub": "us_alaska",
+    "tz": "America/Anchorage",
+    "utc_offset": "-9",
+    "tier": "growing",
+    "cities": ["Anchorage", "Fairbanks", "Juneau"]
+  },
+  {
+    "hub": "pacific_hawaii",
+    "tz": "Pacific/Honolulu",
+    "utc_offset": "-10",
+    "tier": "growing",
+    "cities": ["Honolulu", "Maui", "Tahiti"],
+    "notes": "Growing crypto community, tourism-driven adoption"
+  },
+  {
+    "hub": "pacific_samoa",
+    "tz": "Pacific/Pago_Pago",
+    "utc_offset": "-11",
+    "tier": "growing",
+    "cities": ["Pago Pago", "American Samoa"],
+    "notes": "Emerging Pasifika crypto adoption, remittance potential"
+  }
+]

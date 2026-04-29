@@ -1,0 +1,33 @@
+[Unit]
+Description=Toka 420 Time Bot â€” Telegram cannabis ritual bot
+After=network.target
+StartLimitInterval=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=toka
+Group=toka
+WorkingDirectory=/opt/toka
+Environment="PATH=/opt/toka/.venv/bin:/usr/local/bin:/usr/bin"
+EnvironmentFile=/opt/toka/.env
+ExecStart=/opt/toka/.venv/bin/python app.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=toka
+
+# Security
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/toka/logs /opt/toka/data
+
+# Timeouts
+TimeoutStartSec=30
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
